@@ -92,7 +92,7 @@ app.post('/webhook', async (req, res) => {
   lastSignalData = d;
   botReady = true;  // unlock replies
 
-  const ratio = (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2);
+  const volratio = (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2);
 
   const prompt = `You are a conservative crypto trading analyst focused on small, safe spot buys ($50-100) in BTC dips for 5-10% gains. Prioritize avoiding losses over missing wins—skip marginal or trap dips.
 
@@ -101,12 +101,14 @@ Signal data (TBO-based conditions already met):
 - RSI (14): ${d.RSI.toFixed(2)} (strong oversold <35, decent 35-42, weak >42)
 - Quote Volume USDT: ${d['Quote Volume'].toFixed(0)}
 - Quote SMA (30): ${d['Quote Volume SMA'].toFixed(0)}
-- Ratio: ${ratio}x (core edge—strong >1.3x real inflow, decent 1.1-1.3x, weak <1.1x = likely trap)
+- Volume Ratio: ${volratio}x (core edge—strong >1.3x real inflow, decent 1.1-1.3x, weak <1.1x = likely trap)
+- OBV: ${d['OBV'].toFixed(0)}
+- OBV MA (7): ${d['OBV MA'].toFixed(0)}
 
 Think step by step:
 1. Ratio strength: Is inflow convincingly above average? Weak ratio = high skip chance.
 2. RSI depth: Real oversold or just neutral pullback?
-3. Momentum: OBV rising strongly?
+3. Momentum: OBV rising strongly or above MA? Divergence or slop confirming buyers?
 4. Context: Current X/macro sentiment? News/catalysts/red flags (pumps, dumps, mixed = caution)?
 5. Overall risk: Legit accumulation or chop/trap in high range?
 
