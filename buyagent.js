@@ -22,7 +22,7 @@ Verdict rules:
 - NO if clear downside.
 
 Exact format:
-VERDICT: YES / NO / SKIP
+VERDICT: BUY / SKIP
 REASON: 2-4 sentences on ratio (priority), RSI, momentum, sentiment/risk.
 SIZE: $50-100 (higher for stronger signals) or 0`;
 
