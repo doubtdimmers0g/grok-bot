@@ -144,3 +144,5 @@ app.post('/webhook', async (req, res) => {
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
+
+app.listen(3000, () => console.log('Bot running - replies after first signal'));
