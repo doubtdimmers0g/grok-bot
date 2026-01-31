@@ -1,3 +1,4 @@
+async function sellAgent(grok, data, ratio) {
   const prompt = `You are a conservative crypto trading analyst reviewing an exit on an open BTC spot position (small $50-100 buy on dip).
 
 Current data (sell conditions met):
@@ -5,9 +6,9 @@ Current data (sell conditions met):
 - RSI (14): ${data.RSI.toFixed(2)} (overbought >65 = stretched, neutral 50-65)
 - Quote Volume USDT: ${data['Quote Volume'].toFixed(0)}
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
-- Volume Ratio: ${ratio}x (weak <1.0x = distribution, decent <1.1x)
-- OBV: ${data.OBV.toFixed(0)}
-- OBV MA (7): ${data['OBV MA'].toFixed(0)}
+- Ratio: ${ratio}x (weak <1.0x = distribution, decent <1.1x)
+- OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
+- OBV MA (7): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
 
 Think step by step:
 1. Ratio strength: Fading inflow (<1.0x) = distribution risk.
@@ -22,7 +23,7 @@ Verdict rules:
 - NO if traps (fake fade).
 
 Exact format:
-VERDICT: SELL / HOLD
+VERDICT: SELL / HOLD / NO
 REASON: 2-4 sentences on ratio (priority), RSI, momentum fade, sentiment/risk.
 ACTION: Take full profit / partial / trail stop`;
 
