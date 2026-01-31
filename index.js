@@ -14,6 +14,7 @@ let lastSignalData = null;  // stores last signal for reply context
 let botReady = false;       // only allow replies after first signal
 let offset = 0;             // for polling
 
+const alphaAgent = require('./agents/alphaAgent');
 const buyAgent = require('./agents/buyAgent');
 const sellAgent = require('./agents/sellAgent');
 
@@ -97,21 +98,28 @@ app.post('/webhook', async (req, res) => {
 
   const ratio = (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2);
 
-  let verdict, tgHeader;
+  let buyVerdict = null;
+  let sellVerdict = null;
+  let tgHeader = "<b>BTC Signal</b>";
 
   if (payload.includes("Buy conditions")) {
     tgHeader = "<b>BTC Buy Signal</b>";
-    verdict = await buyAgent(grok, d, ratio);
+    buyVerdict = await buyAgent(grok, d, ratio);
   } else if (payload.includes("Sell conditions")) {
     tgHeader = "<b>BTC Sell Signal</b>";
-    verdict = await sellAgent(grok, d, ratio);
+    sellVerdict = await sellAgent(grok, d, ratio);
   } else {
     return console.log('Unknown signal type');
   }
 
-  console.log('\nGrok verdict:\n', verdict);
+  // Alpha synthesizes
+  const positionContext = 'No open position';  // placeholder for later
+  const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext);
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Grok:</b>\n${verdict}\n\nReply for follow-up.`;
+  console.log('\nSub-verdicts:\nBuy: ' + (buyVerdict || 'N/A') + '\nSell: ' + (sellVerdict || 'N/A'));
+  console.log('\nAlpha final:\n', finalVerdict);
+
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Sub-agents:</b>\n${buyVerdict ? 'Buy: ' + buyVerdict : ''}\n${sellVerdict ? 'Sell: ' + sellVerdict : ''}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\nReply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
