@@ -14,6 +14,9 @@ let lastSignalData = null;  // stores last signal for reply context
 let botReady = false;       // only allow replies after first signal
 let offset = 0;             // for polling
 
+const buyAgent = require('./agents/buyAgent');
+const sellAgent = require('./agents/sellAgent');
+
 function parsePayload(text) {
   const data = {};
   text.split('\n').forEach(line => {
@@ -90,90 +93,27 @@ app.post('/webhook', async (req, res) => {
   if (!d.Price) return console.log('Invalid payload');
 
   lastSignalData = d;
-  botReady = true;  // unlock replies
+  botReady = true;
 
   const ratio = (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2);
 
-  let prompt, tgHeader;
-  
+  let verdict, tgHeader;
+
   if (payload.includes("Buy conditions")) {
     tgHeader = "<b>BTC Buy Signal</b>";
-    prompt = `You are a conservative crypto trading analyst focused on small, safe spot buys ($50-100) in BTC dips for 5-10% gains. Prioritize avoiding losses over missing wins—skip marginal or trap dips.
-
-Signal data (TBO-based conditions already met):
-- Price: $${d.Price.toFixed(2)}
-- RSI (14): ${d.RSI.toFixed(2)} (strong oversold <35, decent 35-42, weak >42)
-- Quote Volume USDT: ${d['Quote Volume'].toFixed(0)}
-- Quote SMA (30): ${d['Quote Volume SMA'].toFixed(0)}
-- Volume Ratio: ${ratio}x (core edge—strong >1.3x real inflow, decent 1.1-1.3x, weak <1.1x = likely trap)
-- OBV: ${d['OBV'].toFixed(0)}
-- OBV MA (7): ${d['OBV MA'].toFixed(0)}
-
-Think step by step:
-1. Ratio strength: Is inflow convincingly above average? Weak ratio = high skip chance.
-2. RSI depth: Real oversold or just neutral pullback?
-3. Momentum: OBV rising strongly or above MA? Divergence or slope confirming buyers?
-4. Context: Current X/macro sentiment? News/catalysts/red flags (pumps, dumps, mixed = caution)?
-5. Overall risk: Legit accumulation or chop/trap in high range?
-
-Verdict rules:
-- YES only if strong ratio (>1.2x) + supportive RSI/momentum + clean context.
-- SKIP most marginal cases.
-- NO if clear downside.
-
-Exact format:
-VERDICT: YES / NO / SKIP
-REASON: 2-4 sentences on ratio (priority), RSI, momentum, sentiment/risk.
-SIZE: $50-100 (higher for stronger signals) or 0`;
+    verdict = await buyAgent(grok, d, ratio);
   } else if (payload.includes("Sell conditions")) {
     tgHeader = "<b>BTC Sell Signal</b>";
-    prompt = `You are a conservative crypto trading analyst reviewing an exit on an open BTC spot position (small $50-100 buy on dip).
-
-Current data (sell conditions met):
-- Price: $${d.Price.toFixed(2)}
-- RSI (14): ${d.RSI.toFixed(2)} (overbought >65 = stretched, neutral 50-65)
-- Quote Volume USDT: ${d['Quote Volume'].toFixed(0)}
-- Quote SMA (30): ${d['Quote Volume SMA'].toFixed(0)}
-- Volume Ratio: ${ratio}x (weak <1.0x = distribution, decent <1.1x)
-- OBV: ${d['OBV'].toFixed(0)}
-- OBV MA (7): ${d['OBV MA'].toFixed(0)}
-
-Think step by step:
-1. Ratio strength: Fading inflow (<1.0x) = distribution risk.
-2. RSI: Overbought or weakening?
-3. Momentum: OBV falling or below MA? Slope confirming sellers?
-4. Context: Current X/macro sentiment? News/red flags for reversal?
-5. Overall: Time to take profits/protect or hold for more?
-
-Verdict rules:
-- SELL if fading momentum + overbought + downside risk.
-- HOLD if momentum strong or ratio decent.
-- NO if traps (fake fade).
-
-Exact format:
-VERDICT: SELL / HOLD / NO
-REASON: 2-4 sentences on ratio (priority), RSI, momentum fade, sentiment/risk.
-ACTION: Take full profit / partial / trail stop`;
+    verdict = await sellAgent(grok, d, ratio);
   } else {
     return console.log('Unknown signal type');
   }
 
-  try {
-    const grokRes = await grok.post('/chat/completions', {
-      model: 'grok-4-fast-reasoning',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3
-    });
+  console.log('\nGrok verdict:\n', verdict);
 
-    const verdict = grokRes.data.choices[0].message.content.trim();
-    console.log('\nGrok verdict:\n', verdict);
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Grok:</b>\n${verdict}\n\nReply for follow-up.`;
 
-    const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Grok:</b>\n${verdict}\n\nReply for follow-up.`;
-
-    await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
-  } catch (err) {
-    console.error('Error:', err.message);
-  }
+  await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
 
 app.listen(3000, () => console.log('Bot running - replies after first signal'));
