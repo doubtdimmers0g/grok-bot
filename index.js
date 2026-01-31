@@ -111,20 +111,20 @@ app.post('/webhook', async (req, res) => {
     sellVerdict = await sellAgent(grok, d, ratio);
   } else {
     console.log('Unknown signal type - skipping');
-    return;  // guard: no processing
+    return;  // guard: no further processing
   }
 
-  // Rare both—prioritize buy or let Alpha handle
+  // Rare both signals—log and let Alpha resolve
   if (buyVerdict && sellVerdict) {
-    console.log('Rare: Both signals—Alpha will resolve');
+    console.log('Rare: Both buy and sell signals—Alpha will resolve');
   }
 
   const positionContext = getPositionContext(d.Price);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext);
 
-  // Robust SIZE parse
+  // Robust SIZE parse (flexible, default 75)
   let size = 75;
-  const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/);
+  const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
   if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
   // Paper execution
@@ -136,7 +136,11 @@ app.post('/webhook', async (req, res) => {
     await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
   }
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Position:</b> ${positionContext}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\nReply for follow-up.`;
+  // Tighter sub log
+  console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
+  console.log('\nAlpha final:\n', finalVerdict);
+
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Position:</b> ${positionContext}\n\n<b>Sub-agents:</b>\n${buyVerdict ? 'Buy: ' + buyVerdict : ''}\n${sellVerdict ? 'Sell: ' + sellVerdict : ''}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\nReply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
