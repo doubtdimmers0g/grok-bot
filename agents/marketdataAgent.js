@@ -1,19 +1,35 @@
 const axios = require('axios');
 
-async function getBTCData() {
+async function getMarketReasoning(grok) {
   try {
     const res = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true');
     const btc = res.data.bitcoin;
-    return {
-      price: btc.usd,
-      marketCap: btc.usd_market_cap,
-      volume24h: btc.usd_24h_vol,
-      change24h: btc.usd_24h_change
-    };
+
+    const prompt = `Analyze current BTC market data for trading context (small safe dip buys).
+
+Data:
+- Price: $${btc.usd.toFixed(2)}
+- 24h change: ${btc.usd_24h_change.toFixed(2)}%
+- 24h volume: $${btc.usd_24h_vol.toFixed(0)}
+
+Think step by step:
+1. Price action: Uptrend, downtrend, or chop?
+2. Volume: Spike (strong interest) or flat/fading?
+3. Overall momentum: Bullish, bearish, neutral?
+
+Output concise market view (2-3 sentences)—no verdict, just contextual information.`;
+
+    const grokRes = await grok.post('/chat/completions', {
+      model: 'grok-4-fast-reasoning',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3
+    });
+
+    return grokRes.data.choices[0].message.content.trim();
   } catch (err) {
-    console.error('CoinGecko error:', err.message);
-    return null;
+    console.error('Market reasoning error:', err.message);
+    return 'Market data unavailable';
   }
 }
 
-module.exports = { getBtcData };
+module.exports = { getMarketReasoning };
