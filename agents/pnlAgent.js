@@ -89,7 +89,7 @@ async function handleBuy(sizeUsd = 75, entryPrice) {
     time: new Date().toISOString()
   };
   await savePosition(position);
-  return `<b>Paper BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
+  return `<b>BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
 }
 
 // Sell
@@ -112,7 +112,7 @@ async function handleSell(exitPrice) {
 
   const { cumulative } = await loadTrades();
 
-  return `<b>Paper SELL</b>: $${position.sizeUsd} at $${exitPrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
+  return `<b>SELL</b>: $${position.sizeUsd} at $${exitPrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell };
