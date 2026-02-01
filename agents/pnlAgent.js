@@ -34,7 +34,7 @@ async function saveFiles(currentPosition, pnlData) {
   }
 }
 
-// Fetch live BTC price from CoinGecko
+// Fetch live BTC price from CoinGecko (no key, free)
 async function getLivePrice() {
   try {
     const res = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
@@ -45,7 +45,7 @@ async function getLivePrice() {
   }
 }
 
-// Context with live price
+// Position context with live price
 async function getPositionContext(signalPrice) {
   const { currentPosition } = await loadFiles();
   if (!currentPosition.open) return 'No open position';
