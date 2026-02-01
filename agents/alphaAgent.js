@@ -1,14 +1,12 @@
-async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext) {  // pass signal data d for price/ratio
-  // Get async context strings
-  const marketReason = await getMarketReasoning(grok) || 'Market data unavailable';
+async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason) {
 
   const prompt = `Prime analyst final synthesis for small safe BTC spot trades ($50-100). Prioritize capital protection.
 
 Inputs:
 - Buy Agent: ${buyVerdict || 'No buy signal'}
 - Sell Agent: ${sellVerdict || 'No sell signal'}
-- Position & Live P&L: ${positionContext}
-- Market Reasoning: ${marketReason}
+- Position & Live P&L: ${positionContext || 'No position context'}
+- Market Reasoning: ${marketReason || 'No market reasonging'}
 
 Think step by step:
 1. Sub-agent consensus: Strong agreement or conflict?
