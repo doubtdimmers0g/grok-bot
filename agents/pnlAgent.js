@@ -68,7 +68,7 @@ async function handleBuy(sizeUsd = 75, entryPrice) {
     time: new Date().toISOString()
   };
   await saveFiles(currentPosition, pnlData);
-  return `<b>Paper BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
+  return `<b>BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
 }
 
 // Sell execution with live price
@@ -91,7 +91,7 @@ async function handleSell() {
   currentPosition.open = false;
   await saveFiles(currentPosition, pnlData);
 
-  return `<b>Paper SELL</b>: $${currentPosition.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${pnlData.cumulative}`;
+  return `<b>SELL</b>: $${currentPosition.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${pnlData.cumulative}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell };
