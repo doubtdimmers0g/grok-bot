@@ -69,14 +69,14 @@ async function getLivePrice() {
 
 // Position context with live price
 async function getPositionContext(signalPrice) {
-  const { currentPosition } = await loadPosition();
-  if (!currentPosition.open) return 'No open position';
+  const position = await loadPosition();
+  if (!position.open) return 'No open position';
 
-  const livePrice = await getLivePrice() || signalPrice;  // fallback to signal price
-  const unrealizedPct = ((livePrice - currentPosition.entry) / currentPosition.entry * 100).toFixed(1);
-  const unrealizedUsd = (livePrice - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
+  const livePrice = await getLivePrice() || signalPrice;
+  const unrealizedPct = ((livePrice - position.entry) / position.entry * 100).toFixed(1);
+  const unrealizedUsd = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
-  return `Open: $${currentPosition.sizeUsd} at $${currentPosition.entry.toFixed(2)}, current $${livePrice.toFixed(2)} (unrealized ${unrealizedPct}% / $${unrealizedUsd.toFixed(2)})`;
+  return `Open: $${position.sizeUsd} at $${position.entry.toFixed(2)}, current $${livePrice.toFixed(2)} (unrealized ${unrealizedPct}% / $${unrealizedUsd.toFixed(2)})`;
 }
 
 // Buy
@@ -97,22 +97,23 @@ async function handleSell(exitPrice) {
   const position = await loadPosition();
   if (!position.open) return 'No position to sell';
 
-  const profit = (exitPrice - position.entry) * (position.sizeUsd / position.entry);
+  const livePrice = await getLivePrice() || exitPrice;
+  const profit = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
   const trade = {
     entry: position.entry,
-    exit: exitPrice,
+    exit: livePrice,
     sizeUsd: position.sizeUsd,
     profit: profit.toFixed(2),
     time: new Date().toISOString()
   };
   await addTrade(trade);
 
-  await savePosition({ open: false });  // reset
+  await savePosition({ open: false });
 
   const { cumulative } = await loadTrades();
 
-  return `<b>SELL</b>: $${position.sizeUsd} at $${exitPrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
+  return `<b>SELL</b>: $${position.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell };
