@@ -1,6 +1,5 @@
-async function alphaAgent(grok, buyVerdict, sellVerdict, d) {  // pass signal data d for price/ratio
+async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext) {  // pass signal data d for price/ratio
   // Get async context strings
-  const positionContext = await getPositionContext(d.Price);
   const marketReason = await getMarketReasoning(grok) || 'Market data unavailable';
 
   const prompt = `Prime analyst final synthesis for small safe BTC spot trades ($50-100). Prioritize capital protection.
