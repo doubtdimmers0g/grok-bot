@@ -1,36 +1,58 @@
-const fs = require('fs').promises;
 const axios = require('axios');
 
-const POSITION_FILE = 'position.json';
-const PNL_FILE = 'pnl.json';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-// Load files with error handling
-async function loadFiles() {
-  let currentPosition = { open: false };
-  let pnlData = { cumulative: 0, trades: [] };
+const headers = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+  Prefer: 'return=representation'
+};
 
+// Load current position (single row table)
+async function loadPosition() {
   try {
-    currentPosition = JSON.parse(await fs.readFile(POSITION_FILE));
+    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?select=*`, { headers });
+    return res.data[0] || { open: false };
   } catch (err) {
     console.error('Position load error:', err.message);
+    return { open: false };
   }
-
-  try {
-    pnlData = JSON.parse(await fs.readFile(PNL_FILE));
-  } catch (err) {
-    console.error('PnL load error:', err.message);
-  }
-
-  return { currentPosition, pnlData };
 }
 
-// Save files
-async function saveFiles(currentPosition, pnlData) {
+// Load trades
+async function loadTrades() {
   try {
-    await fs.writeFile(POSITION_FILE, JSON.stringify(currentPosition, null, 2));
-    await fs.writeFile(PNL_FILE, JSON.stringify(pnlData, null, 2));
+    const res = await axios.get(`${SUPABASE_URL}/rest/v1/trades?select=*&order=time.desc`, { headers });
+    const cumulative = res.data.reduce((sum, trade) => sum + parseFloat(trade.profit || 0), 0);
+    return { trades: res.data, cumulative };
   } catch (err) {
-    console.error('Save error:', err.message);
+    console.error('Trades load error:', err.message);
+    return { trades: [], cumulative: 0 };
+  }
+}
+
+// Save position (upsert)
+async function savePosition(position) {
+  try {
+    if (position.id) {
+      await axios.patch(`${SUPABASE_URL}/rest/v1/current_position?id=eq.${position.id}`, position, { headers });
+    } else {
+      const res = await axios.post(`${SUPABASE_URL}/rest/v1/current_position`, position, { headers });
+      position.id = res.data[0].id;
+    }
+  } catch (err) {
+    console.error('Position save error:', err.message);
+  }
+}
+
+// Add trade
+async function addTrade(trade) {
+  try {
+    await axios.post(`${SUPABASE_URL}/rest/v1/trades`, trade, { headers });
+  } catch (err) {
+    console.error('Trade save error:', err.message);
   }
 }
 
@@ -57,41 +79,40 @@ async function getPositionContext(signalPrice) {
   return `Open: $${currentPosition.sizeUsd} at $${currentPosition.entry.toFixed(2)}, current $${livePrice.toFixed(2)} (unrealized ${unrealizedPct}% / $${unrealizedUsd.toFixed(2)})`;
 }
 
-// Buy execution
+// Buy
 async function handleBuy(sizeUsd = 75, entryPrice) {
   sizeUsd = sizeUsd || 75;
-  let { currentPosition, pnlData } = await loadFiles();
-  currentPosition = {
+  const position = {
     open: true,
     entry: entryPrice,
     sizeUsd: sizeUsd,
     time: new Date().toISOString()
   };
-  await saveFiles(currentPosition, pnlData);
+  await savePosition(position);
   return `<b>Paper BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
 }
 
-// Sell execution with live price
-async function handleSell() {
-  let { currentPosition, pnlData } = await loadFiles();
-  if (!currentPosition.open) return 'No position to sell';
+// Sell
+async function handleSell(exitPrice) {
+  const position = await loadPosition();
+  if (!position.open) return 'No position to sell';
 
-  const livePrice = await getLivePrice() || currentPosition.entry;
-  const profit = (livePrice - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
+  const profit = (exitPrice - position.entry) * (position.sizeUsd / position.entry);
 
-  pnlData.trades.push({
-    entry: currentPosition.entry,
-    exit: livePrice,
-    sizeUsd: currentPosition.sizeUsd,
+  const trade = {
+    entry: position.entry,
+    exit: exitPrice,
+    sizeUsd: position.sizeUsd,
     profit: profit.toFixed(2),
     time: new Date().toISOString()
-  });
-  pnlData.cumulative = (parseFloat(pnlData.cumulative) + profit).toFixed(2);
+  };
+  await addTrade(trade);
 
-  currentPosition.open = false;
-  await saveFiles(currentPosition, pnlData);
+  await savePosition({ open: false });  // reset
 
-  return `<b>Paper SELL</b>: $${currentPosition.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${pnlData.cumulative}`;
+  const { cumulative } = await loadTrades();
+
+  return `<b>Paper SELL</b>: $${position.sizeUsd} at $${exitPrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell };
