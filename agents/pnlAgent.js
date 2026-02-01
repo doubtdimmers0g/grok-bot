@@ -69,7 +69,7 @@ async function getLivePrice() {
 
 // Position context with live price
 async function getPositionContext(signalPrice) {
-  const { currentPosition } = await loadFiles();
+  const { currentPosition } = await loadPosition();
   if (!currentPosition.open) return 'No open position';
 
   const livePrice = await getLivePrice() || signalPrice;  // fallback to signal price
