@@ -18,6 +18,7 @@ const alphaAgent = require('./agents/alphaAgent');
 const buyAgent = require('./agents/buyAgent');
 const sellAgent = require('./agents/sellAgent');
 const { getPositionContext, handleBuy, handleSell } = require('./agents/pnlAgent');
+const { getMarketReasoning } = require('./agents/marketDataAgent');
 
 function parsePayload(text) {
   const data = {};
