@@ -119,7 +119,7 @@ app.post('/webhook', async (req, res) => {
     console.log('Rare: Both buy and sell signals—Alpha will resolve');
   }
 
-  const positionContext = getPositionContext(d.Price);
+  const positionContext = await getPositionContext(d.Price);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext);
 
   // Robust SIZE parse (flexible, default 75)
