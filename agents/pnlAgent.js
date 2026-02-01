@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const axios = require('axios');
 
 const POSITION_FILE = 'position.json';
 const PNL_FILE = 'pnl.json';
@@ -9,17 +10,15 @@ async function loadFiles() {
   let pnlData = { cumulative: 0, trades: [] };
 
   try {
-    const posData = await fs.readFile(POSITION_FILE, 'utf8');
-    currentPosition = JSON.parse(posData);
+    currentPosition = JSON.parse(await fs.readFile(POSITION_FILE));
   } catch (err) {
-    console.error('Position load error—starting fresh:', err.message);
+    console.error('Position load error:', err.message);
   }
 
   try {
-    const pnlRaw = await fs.readFile(PNL_FILE, 'utf8');
-    pnlData = JSON.parse(pnlRaw);
+    pnlData = JSON.parse(await fs.readFile(PNL_FILE));
   } catch (err) {
-    console.error('PnL load error—starting fresh:', err.message);
+    console.error('PnL load error:', err.message);
   }
 
   return { currentPosition, pnlData };
@@ -35,50 +34,27 @@ async function saveFiles(currentPosition, pnlData) {
   }
 }
 
-// Context for Alpha/Telegram
-async function getPositionContext(price) {
+// Fetch live BTC price from CoinGecko
+async function getLivePrice() {
+  try {
+    const res = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    return res.data.bitcoin.usd;
+  } catch (err) {
+    console.error('CoinGecko error:', err.message);
+    return null;
+  }
+}
+
+// Context with live price
+async function getPositionContext(signalPrice) {
   const { currentPosition } = await loadFiles();
   if (!currentPosition.open) return 'No open position';
 
-  const unrealizedPct = ((price - currentPosition.entry) / currentPosition.entry * 100).toFixed(1);
-  const unrealizedUsd = (price - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
-  return `Open: $${currentPosition.sizeUsd} at $${currentPosition.entry.toFixed(2)} (${unrealizedPct}% / $${unrealizedUsd.toFixed(2)})`;
-}
+  const livePrice = await getLivePrice() || signalPrice;  // fallback to signal price
+  const unrealizedPct = ((livePrice - currentPosition.entry) / currentPosition.entry * 100).toFixed(1);
+  const unrealizedUsd = (livePrice - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
 
-// Reasoning on position (new Grok call)
-async function reasonOnPosition(grok, currentPrice, signalData) {
-  const { currentPosition, pnlData } = await loadFiles();
-  if (!currentPosition.open) return 'No open position to review';
-
-  const unrealizedPct = ((currentPrice - currentPosition.entry) / currentPosition.entry * 100).toFixed(1);
-  const unrealizedUsd = (currentPrice - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
-
-const prompt = `Report current position and P&L status factually.
-
-Position data:
-- Open: ${currentPosition.open ? 'Yes' : 'No'}
-- Entry price: $${currentPosition.entry ? currentPosition.entry.toFixed(2) : 'N/A'}
-- Size: $${currentPosition.sizeUsd ? currentPosition.sizeUsd : 'N/A'}
-- Current price: $${currentPrice.toFixed(2)}
-- Unrealized P&L: ${unrealizedPct}% ($${unrealizedUsd.toFixed(2)})
-
-Overall:
-- Cumulative realized P&L: $${pnlData.cumulative}
-- Total trades: ${pnlData.trades.length}
-
-Output only facts in bullet points—no suggestions, verdicts, or actions.`;
-
-  try {
-    const grokRes = await grok.post('/chat/completions', {
-      model: 'grok-4-fast-reasoning',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3
-    });
-    return grokRes.data.choices[0].message.content.trim();
-  } catch (err) {
-    console.error('PnL reasoning error:', err.message);
-    return 'Error reviewing position';
-  }
+  return `Open: $${currentPosition.sizeUsd} at $${currentPosition.entry.toFixed(2)}, current $${livePrice.toFixed(2)} (unrealized ${unrealizedPct}% / $${unrealizedUsd.toFixed(2)})`;
 }
 
 // Buy execution
@@ -95,28 +71,27 @@ async function handleBuy(sizeUsd = 75, entryPrice) {
   return `<b>Paper BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
 }
 
-// Sell execution
-async function handleSell(exitPrice) {
+// Sell execution with live price
+async function handleSell() {
   let { currentPosition, pnlData } = await loadFiles();
   if (!currentPosition.open) return 'No position to sell';
 
-  const profitPct = ((exitPrice - currentPosition.entry) / currentPosition.entry * 100).toFixed(1);
-  const profitUsd = (exitPrice - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
+  const livePrice = await getLivePrice() || currentPosition.entry;
+  const profit = (livePrice - currentPosition.entry) * (currentPosition.sizeUsd / currentPosition.entry);
 
   pnlData.trades.push({
     entry: currentPosition.entry,
-    exit: exitPrice,
+    exit: livePrice,
     sizeUsd: currentPosition.sizeUsd,
-    profitPct,
-    profitUsd: profitUsd.toFixed(2),
+    profit: profit.toFixed(2),
     time: new Date().toISOString()
   });
-  pnlData.cumulative = (parseFloat(pnlData.cumulative) + profitUsd).toFixed(2);
+  pnlData.cumulative = (parseFloat(pnlData.cumulative) + profit).toFixed(2);
 
   currentPosition.open = false;
   await saveFiles(currentPosition, pnlData);
 
-  return `<b>Paper SELL</b>: $${currentPosition.sizeUsd} at $${exitPrice.toFixed(2)}\nProfit: ${profitPct}% ($${profitUsd.toFixed(2)})\nCumulative: $${pnlData.cumulative}`;
+  return `<b>Paper SELL</b>: $${currentPosition.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${pnlData.cumulative}`;
 }
 
-module.exports = { getPositionContext, handleBuy, handleSell, reasonOnPosition };
+module.exports = { getPositionContext, handleBuy, handleSell };
