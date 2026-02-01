@@ -1,10 +1,11 @@
-async function alphaAgent(grok, buyVerdict, sellVerdict, getPositionContext) {
+async function alphaAgent(grok, buyVerdict, sellVerdict, getPositionContext, getMarketReasoning) {
   const prompt = `Synthesize for final trading decision as the prime analyst.
 
 Sub-agent inputs:
 - Buy Agent: ${buyVerdict || 'No buy signal'}
 - Sell Agent: ${sellVerdict || 'No sell signal'}
 - Position & Live P&L: ${getPositionContext}
+- Market Data Agent: ${getMarketReasoning}
 
 Final verdict—conservative, small safe trades only.
 
