@@ -121,7 +121,7 @@ app.post('/webhook', async (req, res) => {
   }
 
   const positionContext = await getPositionContext(d.Price);
-  const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, d);
+  const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext);
 
   // Robust SIZE parse (flexible, default 75)
   let size = 75;
