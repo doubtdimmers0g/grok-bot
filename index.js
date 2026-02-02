@@ -129,30 +129,14 @@ app.post('/webhook', async (req, res) => {
   const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
   if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
-    // Paper execution
-  // if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
-    // const buyMsg = await handleBuy(size, d.Price);
-    // await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
-  // } else if (finalVerdict.includes('SELL')) {
-    // const sellMsg = await handleSell(d.Price);
-    // await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
-  //}
-
-  // Paper execution on Alpha final (log to console only)
-  let executionNote = 'No trade executed';
-  let size = 100;  // fixed default
-  const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
-  if (sizeMatch) size = parseFloat(sizeMatch[1]);
-
+  // Paper execution
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
-    await handleBuy(size, d.Price);
-    executionNote = `Buy executed: $${size} at $${d.Price.toFixed(2)}`;
+    const buyMsg = await handleBuy(size, d.Price);
+    await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
   } else if (finalVerdict.includes('SELL')) {
-    await handleSell(d.Price);
-    executionNote = 'Sell executed';
+    const sellMsg = await handleSell(d.Price);
+    await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
   }
-
-  console.log(executionNote);  // log to Render console for tracking
 
   // Tighter sub log
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
