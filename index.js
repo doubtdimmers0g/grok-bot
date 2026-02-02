@@ -124,9 +124,13 @@ app.post('/webhook', async (req, res) => {
   const marketReason = await getMarketReasoning(grok);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
-let size = 100;  // fixed default
-const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i);
-if (sizeMatch) size = parseFloat(sizeMatch[1]);  // Grok override if present
+// Paper execution on Alpha final (no separate short message)
+if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
+  const size = 75;  // or parse from finalVerdict
+  await handleBuy(size, d.Price);  // just execute, no send
+} else if (finalVerdict.includes('SELL')) {
+  await handleSell(d.Price);  // just execute
+}
 
   // Execution
   let executionNote = '';
