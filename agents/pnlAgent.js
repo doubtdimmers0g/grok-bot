@@ -59,7 +59,9 @@ async function addTrade(trade) {
 // Fetch live BTC price from CoinGecko
 async function getLivePrice() {
   try {
-    const res = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+    const res = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`, {
+      headers: { 'x-cg-demo-api-key': process.env.COINGECKO_API_KEY }
+    });
     return res.data.bitcoin.usd;
   } catch (err) {
     console.error('CoinGecko error:', err.message);
