@@ -124,32 +124,27 @@ app.post('/webhook', async (req, res) => {
   const marketReason = await getMarketReasoning(grok);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
-// Paper execution on Alpha final (no separate short message)
-if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
-  const size = 75;  // or parse from finalVerdict
-  await handleBuy(size, d.Price);  // just execute, no send
-} else if (finalVerdict.includes('SELL')) {
-  await handleSell(d.Price);  // just execute
-}
-
-  // Execution
-  let executionNote = '';
-  let size = 100;  // fixed default for consistency
+  // Robust SIZE parse (flexible, default 75)
+  let size = 75;
   const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
   if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
+    // Paper execution
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
-    const buyResult = await handleBuy(size, d.Price);
-    executionNote = buyResult || 'Buy executed';  // use PnL return or fallback
+    const buyMsg = await handleBuy(size, d.Price);
+    await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
   } else if (finalVerdict.includes('SELL')) {
-    const sellResult = await handleSell(d.Price);
-    executionNote = sellResult || 'Sell executed';
-  } else {
-    executionNote = 'No trade executed';
+    const sellMsg = await handleSell(d.Price);
+    await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
   }
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Execution:</b> ${executionNote}\n\n<b>Position:</b> ${positionContext}\n\n<b>Sub-agents:</b>\n${buyVerdict ? 'Buy: ' + buyVerdict : ''}\n${sellVerdict ? 'Sell: ' + sellVerdict : ''}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\nReply for follow-up.`;
+  // Tighter sub log
+  console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
+  console.log('\nAlpha final:\n', finalVerdict);
+
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\nReply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
+});
 
 app.listen(3000, () => console.log('Bot running - replies after first signal'));
