@@ -27,8 +27,7 @@ Additional rules for single-position trading:
 
 Exact format:
 FINAL VERDICT: BUY / SELL / HOLD / SKIP
-REASON: 3-5 sentences synthesizing inputs, market, position, risk.
-ACTION: Size $50-100, partial, trail, or no trade. Stops/targets if relevant`;
+REASON: 3-5 sentences synthesizing inputs, market, position, risk.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
