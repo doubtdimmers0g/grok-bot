@@ -2,6 +2,7 @@ const axios = require('axios');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
+const COINGECKO_KEY = process.env.COINGECKO_API_KEY;
 
 const headers = {
   apikey: SUPABASE_KEY,
@@ -60,7 +61,7 @@ async function addTrade(trade) {
 async function getLivePrice() {
   try {
     const res = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`, {
-      headers: { 'x-cg-demo-api-key': process.env.COINGECKO_API_KEY }
+      headers: { 'x-cg-demo-api-key': COINGECKO_KEY }
     });
     return res.data.bitcoin.usd;
   } catch (err) {
