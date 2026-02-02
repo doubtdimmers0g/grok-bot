@@ -124,12 +124,21 @@ app.post('/webhook', async (req, res) => {
   const marketReason = await getMarketReasoning(grok);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
+let positionNote = '';
+const posCtx = await getPositionContext(d.Price);  // already called, reuse or call again if needed
+if (posCtx.includes('No open position')) {
+  positionNote = `<b>Current position:</b> Flat - no open position\n\n`;
+} else if (posCtx.includes('Open')) {
+  positionNote = `<b>Current position:</b> ${posCtx}\n\n`;
+}
+// Else empty if error, but unlikely
+
   // Robust SIZE parse (flexible, default 75)
   let size = 100;
   // const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
   // if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
-  // Paper execution
+  // Execution
   let executionNote = '';  // default empty if no trade 
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
     const buyMsg = await handleBuy(size, d.Price);
@@ -146,7 +155,7 @@ app.post('/webhook', async (req, res) => {
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
   console.log('\nAlpha final:\n', finalVerdict);
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}\n\nReply for follow-up.`;
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n${positionNote}<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
