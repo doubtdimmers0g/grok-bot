@@ -130,19 +130,23 @@ app.post('/webhook', async (req, res) => {
   // if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
   // Paper execution
+  let executionNote = '';  // default empty if no trade 
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
     const buyMsg = await handleBuy(size, d.Price);
+    executionNote = `<b>Trade executed:</b>${buyMsg}\n\n`;
     // await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
   } else if (finalVerdict.includes('SELL')) {
-    const sellMsg = await handleSell(size, d.Price);
+    const sellMsg = await handleSell(d.Price);
+    executionNote = `<b>Trade executed:</b>${sellMsg}\n\n`;
     // await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
   }
+  // If HOLD/SKIP → executionNote stays empty, no line added
 
   // Tighter sub log
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
   console.log('\nAlpha final:\n', finalVerdict);
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\nReply for follow-up.`;
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}\n\nReply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
