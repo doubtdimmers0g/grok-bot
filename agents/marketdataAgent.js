@@ -1,8 +1,14 @@
 const axios = require('axios');
 
+const COINGECKO_KEY = process.env.COINGECKO_API_KEY;
+
 async function getMarketReasoning(grok) {
   try {
-    const res = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true');
+    const res = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true', {
+      headers: {
+        'x-cg-demo-api-key': COINGECKO_KEY
+      }
+    });
     const btc = res.data.bitcoin;
 
     const prompt = `Analyze current BTC market data for trading context (small safe dip buys).
