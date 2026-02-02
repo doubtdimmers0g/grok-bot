@@ -24,7 +24,7 @@ Verdict rules:
 
 Exact format:
 VERDICT: YES / NO / SKIP
-REASON: 2-4 sentences on ratio (priority), RSI, momentum, sentiment/risk.
+REASON: 2-4 sentences on ratio (priority), RSI, momentum, sentiment/risk.';
 
   try {
     const grokRes = await grok.post('/chat/completions', {
