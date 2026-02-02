@@ -1,7 +1,7 @@
 async function buyAgent(grok, data, ratio) {
   const prompt = `You are a conservative crypto trading analyst focused on small, safe spot buys ($50-100) in BTC dips for 5-10% gains. Prioritize avoiding losses over missing wins—skip marginal or trap dips.
 
-Signal data (TBO-based conditions already met):
+Signal data (conditions met):
 - Price: $${data.Price.toFixed(2)}
 - RSI (14): ${data.RSI.toFixed(2)} (strong oversold <35, decent 35-42, weak >42)
 - Quote Volume USDT: ${data['Quote Volume'].toFixed(0)}
@@ -25,7 +25,6 @@ Verdict rules:
 Exact format:
 VERDICT: YES / NO / SKIP
 REASON: 2-4 sentences on ratio (priority), RSI, momentum, sentiment/risk.
-SIZE: $50-100 (higher for stronger signals) or 0`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
