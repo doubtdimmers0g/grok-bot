@@ -1,5 +1,5 @@
 async function sellAgent(grok, data, ratio) {
-  const prompt = `You are a conservative crypto trading analyst reviewing an exit on an open BTC spot position (small $50-100 buy on dip).
+  const prompt = `You are a conservative crypto trading analyst reviewing an exit on an open BTC spot position.
 
 Current data (sell conditions met):
 - Price: $${data.Price.toFixed(2)}
@@ -23,9 +23,8 @@ Verdict rules:
 - NO if traps (fake fade).
 
 Exact format:
-VERDICT: SELL / HOLD / NO
-REASON: 2-4 sentences on ratio (priority), RSI, momentum fade, sentiment/risk.
-ACTION: Take full profit / partial / trail stop`;
+VERDICT: SELL / HOLD
+REASON: 2-4 sentences on ratio (priority), RSI, momentum fade, sentiment/risk.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
