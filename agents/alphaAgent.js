@@ -20,6 +20,11 @@ Verdict rules:
 - HOLD on open with momentum.
 - SKIP marginal.
 
+Additional rules for single-position trading:
+- If position open and buy signal: SKIP (already in position—hold or wait for sell).
+- If no position and sell signal: SKIP (nothing to sell).
+- Only BUY to open a new position, SELL to close the existing one.
+
 Exact format:
 FINAL VERDICT: BUY / SELL / HOLD / SKIP
 REASON: 3-5 sentences synthesizing inputs, market, position, risk.
