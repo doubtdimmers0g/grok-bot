@@ -125,16 +125,16 @@ app.post('/webhook', async (req, res) => {
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
   // Robust SIZE parse (flexible, default 75)
-  let size = 75;
-  const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
-  if (sizeMatch) size = parseFloat(sizeMatch[1]);
+  let size = 100;
+  // const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
+  // if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
   // Paper execution
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
     const buyMsg = await handleBuy(size, d.Price);
     // await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
   } else if (finalVerdict.includes('SELL')) {
-    const sellMsg = await handleSell(d.Price);
+    const sellMsg = await handleSell(size, d.Price);
     // await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
   }
 
