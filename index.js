@@ -128,13 +128,20 @@ let size = 100;  // fixed default
 const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i);
 if (sizeMatch) size = parseFloat(sizeMatch[1]);  // Grok override if present
 
-  // Paper execution
+  // Execution
+let executionNote = '';
+  let size = 100;  // fixed default for consistency
+  const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
+  if (sizeMatch) size = parseFloat(sizeMatch[1]);
+
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
-    const buyMsg = await handleBuy(size, d.Price);
-    await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
+    const buyResult = await handleBuy(size, d.Price);
+    executionNote = buyResult || 'Buy executed';  // use PnL return or fallback
   } else if (finalVerdict.includes('SELL')) {
-    const sellMsg = await handleSell(d.Price);
-    await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
+    const sellResult = await handleSell(d.Price);
+    executionNote = sellResult || 'Sell executed';
+  } else {
+    executionNote = 'No trade executed.';
   }
 
   // Tighter sub log
