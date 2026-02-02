@@ -132,10 +132,10 @@ app.post('/webhook', async (req, res) => {
   // Paper execution
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
     const buyMsg = await handleBuy(size, d.Price);
-    await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
+    // await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
   } else if (finalVerdict.includes('SELL')) {
     const sellMsg = await handleSell(d.Price);
-    await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
+    // await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
   }
 
   // Tighter sub log
