@@ -105,10 +105,10 @@ app.post('/webhook', async (req, res) => {
   let tgHeader = "<b>BTC Signal</b>";
 
   if (payload.includes("Buy conditions")) {
-    tgHeader = "<b>BTC Buy Signal</b>";
+    tgHeader = "<b>Hourly Buy Signal</b>";
     buyVerdict = await buyAgent(grok, d, ratio);
   } else if (payload.includes("Sell conditions")) {
-    tgHeader = "<b>BTC Sell Signal</b>";
+    tgHeader = "<b>Hourly Sell Signal</b>";
     sellVerdict = await sellAgent(grok, d, ratio);
   } else {
     console.log('Unknown signal type - skipping');
