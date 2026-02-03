@@ -90,6 +90,7 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 
   const payload = req.body;
+  const lowerPayload = payload.toLowerCase();
   console.log('Payload received:\n', payload);
 
   const d = parsePayload(payload);
@@ -102,13 +103,13 @@ app.post('/webhook', async (req, res) => {
 
   let buyVerdict = null;
   let sellVerdict = null;
-  let tgHeader = "<b>BTC Signal</b>";
+  let tgHeader = "<b>1H Signal</b>";
 
-  if (lowerPayLoad.includes("buy conditions")) {
+  if (lowerPayload.includes("buy conditions")) {
     tgHeader = "<b>1H Buy Signal</b>";
     buyVerdict = await buyAgent(grok, d, ratio);
-  } else if (lowerPayLoad.includes("sell conditions")) {
-    tgHeader = "<b>H1 Sell Signal</b>";
+  } else if (lowerPayload.includes("sell conditions")) {
+    tgHeader = "<b>1H Sell Signal</b>";
     sellVerdict = await sellAgent(grok, d, ratio);
   } else {
     console.log('Unknown signal type - skipping');
@@ -125,37 +126,37 @@ app.post('/webhook', async (req, res) => {
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
 let positionNote = '';
-const posCtx = await getPositionContext(d.Price);  // already called, reuse or call again if needed
-if (posCtx.includes('No open position')) {
+if (positionContext.includes('No open position')) {
   positionNote = `<b>Current position:</b> Flat - no open position\n\n`;
-} else if (posCtx.includes('Open')) {
-  positionNote = `<b>Current position:</b> ${posCtx}\n\n`;
+} else if (positionContext.includes('Open')) {
+  positionNote = `<b>Current position:</b> ${positionContext}\n\n`;
 }
 // Else empty if error, but unlikely
 
-  // Robust SIZE parse (flexible, default 75)
+let marketNote = '';
+if (marketReason && !marketReason.includes('unavailable')) {
+  marketNote = `<b>Market Context:</b>\n${marketReason}\n\n`;
+} else {
+  marketNote = `<b>Market Context:</b> Data unavailable\n\n`;  // fallback grace
+}
+
   let size = 100;
-  // const sizeMatch = finalVerdict.match(/SIZE:\s*\$\s*(\d+)/i) || finalVerdict.match(/\$(\d+)/i);
-  // if (sizeMatch) size = parseFloat(sizeMatch[1]);
 
   // Execution
   let executionNote = '';  // default empty if no trade 
   if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
     const buyMsg = await handleBuy(size, d.Price);
-    executionNote = `<b>Trade executed:</b>${buyMsg}\n\n`;
-    // await sendTelegram(process.env.TELEGRAM_CHAT_ID, buyMsg);
+    executionNote = `<b>Trade executed:</b> ${buyMsg}\n\n`;
   } else if (finalVerdict.includes('SELL')) {
     const sellMsg = await handleSell(d.Price);
-    executionNote = `<b>Trade executed:</b>${sellMsg}\n\n`;
-    // await sendTelegram(process.env.TELEGRAM_CHAT_ID, sellMsg);
+    executionNote = `<b>Trade executed:</b> ${sellMsg}\n\n`;
   }
-  // If HOLD/SKIP → executionNote stays empty, no line added
 
   // Tighter sub log
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
   console.log('\nAlpha final:\n', finalVerdict);
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n${positionNote}<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n${positionNote}${marketNote}<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
