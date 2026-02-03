@@ -102,7 +102,7 @@ app.post('/webhook', async (req, res) => {
 
   let buyVerdict = null;
   let sellVerdict = null;
-  let tgHeader = "<b>BTC Buy Signal</b>";
+  let tgHeader = "<b>BTC Signal</b>";
 
   if (payload.includes("Buy conditions")) {
     tgHeader = "<b>BTC Buy Signal</b>";
