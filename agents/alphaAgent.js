@@ -26,7 +26,7 @@ Additional rules for single-position trading:
 - Only BUY to open a new position, SELL to close the existing one.
 
 Exact format:
-FINAL VERDICT: BUY / SELL / HOLD
+FINAL VERDICT: BUY / SELL / HOLD / SKIP
 REASON: 3-5 sentences synthesizing inputs, market, position, risk.`;
 
   try {
