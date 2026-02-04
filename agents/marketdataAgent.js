@@ -11,7 +11,7 @@ async function getMarketReasoning(grok) {
     });
     const btc = res.data.bitcoin;
 
-    const prompt = `Analyze current BTC market data for trading context (small safe dip buys).
+    const prompt = `Analyze current crypto market data for trading context (small safe dip buys).
 
 Data:
 - Price: $${btc.usd.toFixed(2)}
