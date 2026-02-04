@@ -1,5 +1,5 @@
 async function sellAgent(grok, data, ratio) {
-  const prompt = `You are a conservative crypto trading analyst reviewing an exit on an open BTC spot position.
+  const prompt = `You are a conservative crypto trading analyst reviewing an exit on an open spot crypto position.
 
 Current data (sell conditions met):
 - Price: $${data.Price.toFixed(2)}
