@@ -1,5 +1,5 @@
 async function buyAgent(grok, data, ratio) {
-  const prompt = `You are a conservative crypto trading analyst focused on small, fixed $100 buy BTC dips for 5-10% gains. Prioritize avoiding losses over missing wins—skip marginal or trap dips.
+  const prompt = `You are a conservative crypto trading analyst focused on small, fixed $100 buy dips for 5-10% gains. Prioritize avoiding losses over missing wins—skip marginal or trap dips.
 
 Signal data (conditions met):
 - Price: $${data.Price.toFixed(2)}
