@@ -1,6 +1,6 @@
 async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason) {
 
-  const prompt = `Prime analyst final synthesis for small safe BTC spot trades ($50-100). Prioritize capital protection.
+  const prompt = `Prime analyst final synthesis for spot crypto market trades. Prioritize capital protection.
 
 Inputs:
 - Buy Agent: ${buyVerdict || 'No buy signal'}
@@ -26,7 +26,7 @@ Additional rules for single-position trading:
 - Only BUY to open a new position, SELL to close the existing one.
 
 Exact format:
-FINAL VERDICT: BUY / SELL / HOLD / SKIP
+FINAL VERDICT: BUY / SELL / HOLD
 REASON: 3-5 sentences synthesizing inputs, market, position, risk.`;
 
   try {
