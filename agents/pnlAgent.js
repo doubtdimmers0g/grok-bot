@@ -14,8 +14,11 @@ const headers = {
 // Load current position (single row table)
 async function loadPosition() {
   try {
-    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?select=*`, { headers });
-    return res.data[0] || { open: false };
+    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?open=eq.true&select=*`, { headers });
+    if (res.data.length === 0) {
+      return { open: false };
+    }
+    return res.data[0];
   } catch (err) {
     console.error('Position load error:', err.message);
     return { open: false };
