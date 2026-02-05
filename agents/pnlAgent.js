@@ -92,7 +92,7 @@ async function handleBuy(sizeUsd = 75, entryPrice) {
     time: new Date().toISOString()
   };
   await savePosition(position);
-  return `<b>BUY</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
+  return `<b>BOUGHT</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
 }
 
 // Sell
@@ -111,12 +111,20 @@ async function handleSell(exitPrice) {
     time: new Date().toISOString()
   };
   await addTrade(trade);
-
-  await savePosition({ open: false });
+  
+    // Explicit patch of existing row
+  const closedPosition = {
+    id: position.id,  // key for patch
+    open: false,
+    entry: null,
+    sizeUsd: 0,
+    time: null  // clear timestamp
+  };
+  await savePosition(closedPosition);
 
   const { cumulative } = await loadTrades();
 
-  return `<b>SELL</b>: $${position.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
+  return `<b>SOLD</b>: $${position.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell };
