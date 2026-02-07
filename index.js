@@ -144,13 +144,19 @@ if (marketReason && !marketReason.includes('unavailable')) {
 
   // Execution
   let executionNote = '';  // default empty if no trade 
-  if (finalVerdict.includes('YES') || finalVerdict.includes('BUY')) {
+
+  // Extract clean verdict
+  const verdictMatch = finalVerdict.match(/FINAL VERDICT:\s*(BUY|SELL|SKIP|HOLD|YES)/i);
+  const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
+  
+  if (cleanVerdict === 'BUY' || cleanVerdict === 'YES') {
     const buyMsg = await handleBuy(size, d.Price);
     executionNote = `<b>Trade executed:</b> ${buyMsg}\n\n`;
-  } else if (finalVerdict.includes('SELL')) {
+  } else if (cleanVerdict === 'SELL') {
     const sellMsg = await handleSell(d.Price);
     executionNote = `<b>Trade executed:</b> ${sellMsg}\n\n`;
   }
+  // SKIP/HOLD or unknown: no note, no trade
 
   // Tighter sub log
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
