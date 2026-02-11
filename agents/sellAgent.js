@@ -1,30 +1,29 @@
 async function sellAgent(grok, data, ratio) {
-  const prompt = `You are a conservative crypto trading analyst reviewing an exit on an open spot crypto position.
+  const prompt = const prompt = `You are a conservative BTC spot sell analyst. TBO Pro has signaled Close Long—evaluate if distribution risk, overextension, or fading momentum justifies exit to protect gains.
 
-Current data (sell conditions met):
+Current data:
 - Price: $${data.Price.toFixed(2)}
-- RSI (14): ${data.RSI.toFixed(2)} (overbought >65 = stretched, neutral 50-65)
+- RSI (14): ${data.RSI.toFixed(2)} (overbought >65 = stretched)
 - Quote Volume USDT: ${data['Quote Volume'].toFixed(0)}
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
-- Ratio: ${ratio}x (weak <1.0x = distribution, decent <1.1x)
+- Ratio: ${ratio}x (weak <1.0x = distribution)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
 - OBV MA (7): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
 
 Think step by step:
-1. Ratio strength: Fading inflow (<1.0x) = distribution risk.
-2. RSI: Overbought or weakening?
-3. Momentum: OBV falling or below MA? Slope confirming sellers?
-4. Context: Current X/macro sentiment? News/red flags for reversal?
-5. Overall: Time to take profits/protect or hold for more?
+1. TBO conviction: Close Long suggests fade—does data confirm (weak ratio, momentum fade)?
+2. Ratio/inflow: Fading or distribution?
+3. RSI/momentum: Overbought or OBV falling?
+4. Risk: Hold for more if strong momentum/macro?
+5. Overall: Time to lock profits/protect?
 
 Verdict rules:
-- SELL if fading momentum + overbought + downside risk.
-- HOLD if momentum strong or ratio decent.
-- NO if traps (fake fade).
+- SELL if TBO alignment + risks (weak ratio, overextension).
+- HOLD if momentum decent or data contradicts TBO.
 
 Exact format:
 VERDICT: SELL / HOLD
-REASON: 2-4 sentences on ratio (priority), RSI, momentum fade, sentiment/risk.`;
+REASON: 2-4 sentences on TBO alignment, ratio (priority), RSI, momentum fade, risk.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
