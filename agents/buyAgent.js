@@ -1,30 +1,29 @@
 async function buyAgent(grok, data, ratio) {
-  const prompt = `You are a conservative crypto trading analyst focused on small, fixed $100 buy dips for 5-10% gains. Prioritize avoiding losses over missing wins—skip marginal or trap dips.
+  const prompt = const prompt = `You are a conservative BTC spot buy analyst. TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
 
-Signal data (conditions met):
+Current data:
 - Price: $${data.Price.toFixed(2)}
-- RSI (14): ${data.RSI.toFixed(2)} (strong oversold <35, decent 35-42, weak >42)
+- RSI (14): ${data.RSI.toFixed(2)} (oversold <40 = dip support)
 - Quote Volume USDT: ${data['Quote Volume'].toFixed(0)}
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
-- Ratio: ${ratio}x (core edge—strong >1.3x real inflow, decent 1.1-1.3x, weak <1.1x = likely trap)
+- Ratio: ${ratio}x (positive >1.0x = edge, strong >1.3x = conviction)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
 - OBV MA (7): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
 
 Think step by step:
-1. Ratio strength: Is inflow convincingly above average? Weak ratio = high skip chance.
-2. RSI depth: Real oversold or just neutral pullback?
-3. Momentum: OBV rising strongly or above MA? Divergence or slope confirming buyers?
-4. Context: Current X/macro sentiment? News/catalysts/red flags (pumps, dumps, mixed = caution)?
-5. Overall risk: Legit accumulation or chop/trap in high range?
+1. TBO conviction: Open Long suggests breakout—does data confirm (decent ratio, momentum support)?
+2. Ratio/inflow: Positive edge or strong surge?
+3. RSI/momentum: Oversold support or OBV rising?
+4. Risk: Trap flags (high range, weak volume, red macro)?
+5. Overall: Safe low-risk entry?
 
 Verdict rules:
-- YES only if strong ratio (>1.2x) + supportive RSI/momentum + clean context.
-- SKIP most marginal cases.
-- NO if clear downside.
+- BUY if TBO alignment + supportive data (ratio >1.0x, low risks).
+- SKIP if marginal, traps, or data contradicts TBO.
 
 Exact format:
 VERDICT: BUY / SKIP
-REASON: 2-4 sentences on ratio (priority), RSI, momentum, sentiment/risk.`;
+REASON: 2-4 sentences on TBO alignment, ratio (priority), RSI, momentum, risk.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
