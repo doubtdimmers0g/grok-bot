@@ -102,6 +102,7 @@ app.post('/webhook', async (req, res) => {
     'BTCUSD': { cgId: 'bitcoin', name: 'Bitcoin' },
     'ETHUSD': { cgId: 'ethereum', name: 'Ethereum' },
     'SOLUSD': { cgId: 'solana', name: 'Solana' },
+    'SUIUSD': { cgId: 'sui', symbol: 'Sui' },
     // Add more as needed
   };
   const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback BTC
