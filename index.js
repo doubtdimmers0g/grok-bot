@@ -93,13 +93,20 @@ app.post('/webhook', async (req, res) => {
   const lowerPayload = payload.toLowerCase();
   console.log('Payload received:\n', payload);
 
+  // Add symbol parsing here
+    const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
+    const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';  // fallback to BTC
+
   const d = parsePayload(payload);
   if (!d.Price) return console.log('Invalid payload');
+
+  // Add symbol to data for agents/mapping
+  d.Symbol = symbol;
 
   lastSignalData = d;
   botReady = true;
 
-  const ratio = (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2);
+  const ratio = d['Quote Volume'] && d['Quote Volume SMA'] ? (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2) : null;
 
   let buyVerdict = null;
   let sellVerdict = null;
@@ -162,7 +169,7 @@ if (marketReason && !marketReason.includes('unavailable')) {
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
   console.log('\nAlpha final:\n', finalVerdict);
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price.toFixed(2)}\nRSI: ${d.RSI.toFixed(2)}\nRatio: ${ratio}x\n\n${positionNote}${marketNote}<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price ? d.Price.toFixed(2) : 'N/A'}\nRSI: ${d.RSI ? d.RSI.toFixed(2) : 'N/A'}\nRatio: ${ratio ? ratio + 'x' : 'N/A'}\n\n${positionNote}${marketNote}<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
