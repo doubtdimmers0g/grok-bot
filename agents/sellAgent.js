@@ -1,5 +1,5 @@
 async function sellAgent(grok, data, ratio) {
-  const prompt = `You are a conservative BTC spot sell analyst. TBO Pro has signaled Close Long—evaluate if distribution risk, overextension, or fading momentum justifies exit to protect gains.
+  const prompt = `You are a crypto spot sell analyst. TBO Pro has signaled Close Long—evaluate if distribution risk, overextension, or fading momentum justifies exit to protect gains.
 
 Current data:
 - Price: $${data.Price.toFixed(2)}
@@ -8,7 +8,7 @@ Current data:
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
 - Ratio: ${ratio}x (weak <1.0x = distribution)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
-- OBV MA (7): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
+- OBV MA (21): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
 
 Think step by step:
 1. TBO conviction: Close Long suggests fade—does data confirm (weak ratio, momentum fade)?
