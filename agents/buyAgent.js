@@ -1,5 +1,5 @@
 async function buyAgent(grok, data, ratio) {
-  const prompt = `You are a conservative BTC spot buy analyst. TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
+  const prompt = `You are a crypto spot buy analyst. TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
 
 Current data:
 - Price: $${data.Price.toFixed(2)}
@@ -8,7 +8,7 @@ Current data:
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
 - Ratio: ${ratio}x (positive >1.0x = edge, strong >1.3x = conviction)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
-- OBV MA (7): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
+- OBV MA (21): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
 
 Think step by step:
 1. TBO conviction: Open Long suggests breakout—does data confirm (decent ratio, momentum support)?
