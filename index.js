@@ -56,7 +56,7 @@ async function pollUpdates() {
         const chatId = update.message.chat.id;
         const userText = update.message.text.trim();
 
-        const replyPrompt = `User follow-up on last BTC signal: "${userText}"
+        const replyPrompt = `User follow-up on last signal: "${userText}"
 
 Last signal data for context:
 ${JSON.stringify(lastSignalData, null, 2)}
