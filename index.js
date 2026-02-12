@@ -10,9 +10,9 @@ const grok = axios.create({
   headers: { Authorization: `Bearer ${process.env.GROK_API_KEY}` }
 });
 
-let lastSignalData = null;  // stores last signal for reply context
-let botReady = false;       // only allow replies after first signal
-let offset = 0;             // for polling
+let lastSignalData = null;
+let botReady = false;
+let offset = 0;
 
 const alphaAgent = require('./agents/alphaAgent');
 const buyAgent = require('./agents/buyAgent');
@@ -93,15 +93,14 @@ app.post('/webhook', async (req, res) => {
   const lowerPayload = payload.toLowerCase();
   console.log('Payload received:\n', payload);
 
-  // Add symbol parsing here
-    const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
-    const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';  // fallback to BTC
+  // Symbol parsing early
+  const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
+  const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';
 
   const d = parsePayload(payload);
   if (!d.Price) return console.log('Invalid payload');
 
-  // Add symbol to data for agents/mapping
-  d.Symbol = symbol;
+  d.Symbol = symbol;  // for agents/future mapping
 
   lastSignalData = d;
   botReady = true;
@@ -110,17 +109,17 @@ app.post('/webhook', async (req, res) => {
 
   let buyVerdict = null;
   let sellVerdict = null;
-  let tgHeader = "<b>1H Signal</b>";
+  let tgHeader = `<b>1H ${symbol} Signal</b>`;  // default with symbol
 
   if (lowerPayload.includes("buy conditions")) {
-    tgHeader = "<b>1H Buy Signal</b>";
+    tgHeader = `<b>1H ${symbol} Buy Signal</b>`;
     buyVerdict = await buyAgent(grok, d, ratio);
   } else if (lowerPayload.includes("sell conditions")) {
-    tgHeader = "<b>1H Sell Signal</b>";
+    tgHeader = `<b>1H ${symbol} Sell Signal</b>`;
     sellVerdict = await sellAgent(grok, d, ratio);
   } else {
     console.log('Unknown signal type - skipping');
-    return;  // guard: no further processing
+    return;
   }
 
   // Rare both signals—log and let Alpha resolve
