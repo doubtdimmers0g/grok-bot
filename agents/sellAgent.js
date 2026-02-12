@@ -1,4 +1,4 @@
-async function sellAgent(grok, data, ratio) {
+async function sellAgent(grok, data, ratio, asset) {
   const prompt = `You are a crypto spot sell analyst for ${asset.name}. TBO Pro has signaled Close Long—evaluate if distribution risk, overextension, or fading momentum justifies exit to protect gains.
 
 Current data:
