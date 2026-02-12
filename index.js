@@ -182,4 +182,5 @@ if (marketReason && !marketReason.includes('unavailable')) {
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
 
-app.listen(3000, () => console.log('Bot running - replies after first signal'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Bot running on port ${PORT} - replies after first signal`));
