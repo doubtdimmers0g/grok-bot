@@ -97,6 +97,15 @@ app.post('/webhook', async (req, res) => {
   const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
   const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';
 
+  // New assetMap
+  const assetMap = {
+    'BTCUSD': { cgId: 'bitcoin', name: 'Bitcoin' },
+    'ETHUSD': { cgId: 'ethereum', name: 'Ethereum' },
+    'SOLUSD': { cgId: 'solana', name: 'Solana' },
+    // Add more as needed
+  };
+  const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback BTC
+  
   const d = parsePayload(payload);
   if (!d.Price) return console.log('Invalid payload');
 
@@ -128,7 +137,7 @@ app.post('/webhook', async (req, res) => {
   }
 
   const positionContext = await getPositionContext(d.Price);
-  const marketReason = await getMarketReasoning(grok);
+  const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
 let positionNote = '';
