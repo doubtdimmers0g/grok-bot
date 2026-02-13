@@ -102,7 +102,7 @@ app.post('/webhook', async (req, res) => {
     'BTCUSD': { cgId: 'bitcoin', name: 'Bitcoin' },
     'ETHUSD': { cgId: 'ethereum', name: 'Ethereum' },
     'SOLUSD': { cgId: 'solana', name: 'Solana' },
-    'SUIUSD': { cgId: 'sui', symbol: 'Sui' },
+    'SUIUSD': { cgId: 'sui', name: 'Sui' },
     // Add more as needed
   };
   const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback BTC
@@ -137,7 +137,7 @@ app.post('/webhook', async (req, res) => {
     console.log('Rare: Both buy and sell signals—Alpha will resolve');
   }
 
-  const positionContext = await getPositionContext(d.Price);
+  const positionContext = await getPositionContext(d.Price, asset);
   const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
@@ -169,7 +169,7 @@ if (marketReason && !marketReason.includes('unavailable')) {
     const buyMsg = await handleBuy(size, d.Price);
     executionNote = `<b>Trade executed:</b> ${buyMsg}\n\n`;
   } else if (cleanVerdict === 'SELL') {
-    const sellMsg = await handleSell(d.Price);
+    const sellMsg = await handleSell(d.Price, asset);
     executionNote = `<b>Trade executed:</b> ${sellMsg}\n\n`;
   }
   // SKIP/HOLD or unknown: no note, no trade
