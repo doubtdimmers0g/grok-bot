@@ -171,10 +171,10 @@ if (marketReason && !marketReason.includes('unavailable')) {
   const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
   
   if (cleanVerdict === 'BUY' || cleanVerdict === 'YES') {
-    const buyMsg = await handleBuy(size, d.Price, symbol);
+    const buyMsg = await handleBuy(size, d.Price, symbol, asset);
     executionNote = `<b>Trade executed:</b> ${buyMsg}\n\n`;
   } else if (cleanVerdict === 'SELL') {
-    const sellMsg = await handleSell(d.Price, symbol);
+    const sellMsg = await handleSell(d.Price, symbol, asset);
     executionNote = `<b>Trade executed:</b> ${sellMsg}\n\n`;
   }
   // SKIP/HOLD or unknown: no note, no trade
