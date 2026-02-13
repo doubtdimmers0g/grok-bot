@@ -1,6 +1,6 @@
 async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason) {
 
-  const prompt = `const prompt = `Prime analyst final synthesis for spot crypto market trades. Prioritize capital protection in multi-position mode (one open per asset, concurrent across assets).
+  const prompt = `const prompt = Prime analyst final synthesis for spot crypto market trades. Prioritize capital protection in multi-position mode (one open per asset, concurrent across assets).
 
 Inputs:
 - Buy Agent: ${buyVerdict || 'No buy signal'}
