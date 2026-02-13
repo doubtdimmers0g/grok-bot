@@ -142,7 +142,7 @@ app.post('/webhook', async (req, res) => {
     console.log('Rare: Both buy and sell signals—Alpha will resolve');
   }
 
-  const positionContext = await getPositionContext(d.Price, symbol);
+  const positionContext = await getPositionContext(d.Price, symbol, asset);
   const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
