@@ -12,9 +12,9 @@ const headers = {
 };
 
 // Load current position (single row table)
-async function loadPosition() {
+async function loadPosition(symbol) {
   try {
-    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?open=eq.true&select=*`, { headers });
+    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&open=eq.true&select=*`, { headers });
     if (res.data.length === 0) {
       return { open: false };
     }
@@ -60,7 +60,7 @@ async function addTrade(trade) {
   }
 }
 
-// Fetch live BTC price from CoinGecko
+// Fetch live asset price from CoinGecko
 async function getLivePrice(asset) {
   const cgId = asset?.cgId || 'bitcoin';  // define here
   try {
@@ -75,8 +75,8 @@ async function getLivePrice(asset) {
 }
 
 // Position context with live price
-async function getPositionContext(signalPrice, asset) {
-  const position = await loadPosition();
+async function getPositionContext(signalPrice, symbol) {
+  const position = await loadPosition(symbol);
   if (!position.open) return 'No open position';
 
   const cgId = asset?.cgId || 'bitcoin'
@@ -84,26 +84,27 @@ async function getPositionContext(signalPrice, asset) {
   const unrealizedPct = ((livePrice - position.entry) / position.entry * 100).toFixed(1);
   const unrealizedUsd = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
-  return `Open: $${position.sizeUsd} at $${position.entry.toFixed(2)}, current $${livePrice.toFixed(2)} (unrealized ${unrealizedPct}% / $${unrealizedUsd.toFixed(2)})`;
+    return `Open ${position.symbol}: $${position.sizeUsd.toFixed(0)} at $${position.entry.toFixed(4)}, current ~$${livePrice.toFixed(4)} (unrealized ${unrealizedPct}% / $${unrealizedUsd})`;
 }
 
 // Buy
-async function handleBuy(sizeUsd = 100, entryPrice, asset) {
+async function handleBuy(sizeUsd = 100, entryPrice, symbol) {
   sizeUsd = sizeUsd || 100;
   const position = {
     open: true,
     entry: entryPrice,
     sizeUsd: sizeUsd,
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
+    symbol: symbol
   };
   await savePosition(position);
-  return `<b>BOUGHT</b>: $${sizeUsd} at $${entryPrice.toFixed(2)}`;
+  return `<b>BOUGHT</b>: $${sizeUsd} at $${entryPrice.toFixed(4)} (${symbol})`;
 }
 
 // Sell
-async function handleSell(exitPrice, asset) {
-  const position = await loadPosition();
-  if (!position.open) return 'No position to sell';
+async function handleSell(exitPrice, symbol) {
+  const position = await loadPosition(symbol);
+  if (!position.open) return 'No position open for this asset';
 
   const livePrice = await getLivePrice(asset) || exitPrice;
   const profit = (livePrice - position.entry) * (position.sizeUsd / position.entry);
@@ -123,7 +124,8 @@ async function handleSell(exitPrice, asset) {
     open: false,
     entry: null,
     sizeUsd: 0,
-    time: null  // clear timestamp
+    time: null,
+    symbol: position.symbol
   };
   await savePosition(closedPosition);
 
