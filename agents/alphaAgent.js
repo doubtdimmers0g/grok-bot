@@ -1,33 +1,28 @@
 async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason) {
 
-  const prompt = `Prime analyst final synthesis for spot crypto market trades. Prioritize capital protection.
+  const prompt = `const prompt = `Prime analyst final synthesis for spot crypto market trades. Prioritize capital protection in multi-position mode (one open per asset, concurrent across assets).
 
 Inputs:
 - Buy Agent: ${buyVerdict || 'No buy signal'}
 - Sell Agent: ${sellVerdict || 'No sell signal'}
 - Position & Live P&L: ${positionContext || 'No position context'}
-- Market Reasoning: ${marketReason || 'No market reasonging'}
+- Market Reasoning: ${marketReason || 'No market reasoning'}
 
 Think step by step:
-1. Sub-agent consensus: Strong agreement or conflict?
-2. Position risk: Gains to protect or losses to cut?
-3. Market momentum: Volume/change confirming trend?
-4. Overall: Legit opportunity or trap?
+1. Sub-agent consensus: Strong agreement or conflict on this asset?
+2. Position risk per asset: Gains to protect or losses to cut on the signaled coin?
+3. Market momentum: Volume/change confirming trend for this asset?
+4. Overall: Legit opportunity or trap for the signaled asset?
 
 Verdict rules:
-- BUY only on strong consensus + clean context.
-- SELL on fading + risk.
-- HOLD on open with momentum.
-- SKIP marginal.
-
-Additional rules for single-position trading:
-- If position open and buy signal: SKIP (already in position—hold or wait for sell).
-- If no position and sell signal: SKIP (nothing to sell).
-- Only BUY to open a new position, SELL to close the existing one.
+- BUY on strong consensus + clean context for the signaled asset (open new if none for this coin).
+- SELL on fading + risk for the signaled asset (close if open for this coin).
+- HOLD on open with momentum for the signaled asset.
+- SKIP marginal or contradicting data.
 
 Exact format:
 FINAL VERDICT: BUY / SELL / HOLD / SKIP
-REASON: 3-5 sentences synthesizing inputs, market, position, risk.`;
+REASON: 3-5 sentences synthesizing inputs, market, position per asset, risk.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
