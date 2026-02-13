@@ -61,12 +61,13 @@ async function addTrade(trade) {
 }
 
 // Fetch live BTC price from CoinGecko
-async function getLivePrice() {
+async function getLivePrice(asset) {
+  const cgId = asset?.cgId || 'bitcoin';  // define here
   try {
-    const res = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`, {
+    const res = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${cgId}&vs_currencies=usd`, {
       headers: { 'x-cg-demo-api-key': COINGECKO_KEY }
     });
-    return res.data.bitcoin.usd;
+    return res.data[cgId.toLowerCase()]?.usd || null;
   } catch (err) {
     console.error('CoinGecko error:', err.message);
     return null;
@@ -74,11 +75,12 @@ async function getLivePrice() {
 }
 
 // Position context with live price
-async function getPositionContext(signalPrice) {
+async function getPositionContext(signalPrice, asset) {
   const position = await loadPosition();
   if (!position.open) return 'No open position';
 
-  const livePrice = await getLivePrice() || signalPrice;
+  const cgId = asset?.cgId || 'bitcoin'
+  const livePrice = await getLivePrice(asset) || signalPrice;
   const unrealizedPct = ((livePrice - position.entry) / position.entry * 100).toFixed(1);
   const unrealizedUsd = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
@@ -86,8 +88,8 @@ async function getPositionContext(signalPrice) {
 }
 
 // Buy
-async function handleBuy(sizeUsd = 75, entryPrice) {
-  sizeUsd = sizeUsd || 75;
+async function handleBuy(sizeUsd = 100, entryPrice, asset) {
+  sizeUsd = sizeUsd || 100;
   const position = {
     open: true,
     entry: entryPrice,
@@ -99,11 +101,11 @@ async function handleBuy(sizeUsd = 75, entryPrice) {
 }
 
 // Sell
-async function handleSell(exitPrice) {
+async function handleSell(exitPrice, asset) {
   const position = await loadPosition();
   if (!position.open) return 'No position to sell';
 
-  const livePrice = await getLivePrice() || exitPrice;
+  const livePrice = await getLivePrice(asset) || exitPrice;
   const profit = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
   const trade = {
