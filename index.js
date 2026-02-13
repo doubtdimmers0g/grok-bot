@@ -14,6 +14,40 @@ let lastSignalData = null;
 let botReady = false;
 let offset = 0;
 
+// Dynamic assetMap - global
+let dynamicAssetMap = {};
+
+async function loadDynamicAssetMap() {
+  try {
+    const res = await axios.get('https://api.coingecko.com/api/v3/coins/list');
+    res.data.forEach(coin => {
+      const upperSymbol = coin.symbol.toUpperCase();
+      dynamicAssetMap[`${upperSymbol}USD`] = { cgId: coin.id, name: coin.name };
+      dynamicAssetMap[`${upperSymbol}USDT`] = { cgId: coin.id, name: coin.name };
+      dynamicAssetMap[upperSymbol] = { cgId: coin.id, name: coin.name };
+    });
+    console.log(`Dynamic assetMap loaded: ${Object.keys(dynamicAssetMap).length} entries`);
+  } catch (err) {
+    console.error('Failed to load dynamic assetMap:', err.message);
+  }
+}
+
+function getAsset(symbol) {
+  const upperSymbol = symbol.toUpperCase();
+  if (dynamicAssetMap[upperSymbol]) return dynamicAssetMap[upperSymbol];
+
+  const base = upperSymbol.replace(/USD?T?$/, '');
+  if (dynamicAssetMap[base + 'USD']) return dynamicAssetMap[base + 'USD'];
+  if (dynamicAssetMap[base + 'USDT']) return dynamicAssetMap[base + 'USDT'];
+  if (dynamicAssetMap[base]) return dynamicAssetMap[base];
+
+  console.warn(`Unknown symbol ${symbol} - falling back to BTC`);
+  return { cgId: 'bitcoin', name: 'Bitcoin' };
+}
+
+// Load the map once at startup
+loadDynamicAssetMap();
+
 const alphaAgent = require('./agents/alphaAgent');
 const buyAgent = require('./agents/buyAgent');
 const sellAgent = require('./agents/sellAgent');
@@ -97,16 +131,8 @@ app.post('/webhook', async (req, res) => {
   const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
   const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';
 
-  // New assetMap
-  const assetMap = {
-    'BTCUSD': { cgId: 'bitcoin', name: 'Bitcoin' },
-    'ETHUSD': { cgId: 'ethereum', name: 'Ethereum' },
-    'SOLUSD': { cgId: 'solana', name: 'Solana' },
-    'SUIUSD': { cgId: 'sui', name: 'Sui' },
-    // Add more as needed
-  };
-  const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback BTC
-  
+  const asset = getAsset(symbol);
+   
   const d = parsePayload(payload);
   if (!d.Price) return console.log('Invalid payload');
 
@@ -119,13 +145,13 @@ app.post('/webhook', async (req, res) => {
 
   let buyVerdict = null;
   let sellVerdict = null;
-  let tgHeader = `<b>1H ${symbol} Signal</b>`;  // default with symbol
+  let tgHeader = `<b>1H ${asset.name || symbol} Signal</b>`;  // default with symbol
 
   if (lowerPayload.includes("buy conditions")) {
-    tgHeader = `<b>1H ${symbol} Buy Signal</b>`;
+    tgHeader = `<b>1H ${asset.name || symbol} Buy Signal</b>`;
     buyVerdict = await buyAgent(grok, d, ratio, asset);
   } else if (lowerPayload.includes("sell conditions")) {
-    tgHeader = `<b>1H ${symbol} Sell Signal</b>`;
+    tgHeader = `<b>1H ${asset.name || symbol} Sell Signal</b>`;
     sellVerdict = await sellAgent(grok, d, ratio, asset);
   } else {
     console.log('Unknown signal type - skipping');
@@ -183,5 +209,10 @@ if (marketReason && !marketReason.includes('unavailable')) {
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Bot running on port ${PORT} - replies after first signal`));
+async function startServer() {
+  await loadDynamicAssetMap();  // wait for map
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Bot running on port ${PORT} - replies after first signal`));
+}
+  
+startServer();
