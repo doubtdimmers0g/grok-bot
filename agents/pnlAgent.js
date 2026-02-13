@@ -11,14 +11,12 @@ const headers = {
   Prefer: 'return=representation'
 };
 
-// Load current position (single row table)
+// Load by symbol (multiple concurrent across symbols)
 async function loadPosition(symbol) {
   try {
-    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&open=eq.true&select=*`, { headers });
-    if (res.data.length === 0) {
-      return { open: false };
-    }
-    return res.data[0];
+    const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&select=*`, { headers });
+    if (res.data.length === 0) return { open: false };
+    return res.data[0];  // one per symbol (index enforces)
   } catch (err) {
     console.error('Position load error:', err.message);
     return { open: false };
@@ -37,7 +35,7 @@ async function loadTrades() {
   }
 }
 
-// Save position (upsert)
+// Save/upsert (by ID or new)
 async function savePosition(position) {
   try {
     if (position.id) {
@@ -74,39 +72,41 @@ async function getLivePrice(asset) {
   }
 }
 
-// Position context with live price
-async function getPositionContext(signalPrice, symbol) {
+// getPositionContext (per symbol)
+async function getPositionContext(signalPrice, symbol, asset) {
   const position = await loadPosition(symbol);
-  if (!position.open) return 'No open position';
+  if (!position.open) return `Flat on ${symbol} - no open position`;
 
-  const cgId = asset?.cgId || 'bitcoin'
   const livePrice = await getLivePrice(asset) || signalPrice;
+
   const unrealizedPct = ((livePrice - position.entry) / position.entry * 100).toFixed(1);
-  const unrealizedUsd = (livePrice - position.entry) * (position.sizeUsd / position.entry);
+  const unrealizedUsd = ((livePrice - position.entry) * (position.sizeUsd / position.entry)).toFixed(2);
 
-    return `Open ${position.symbol}: $${position.sizeUsd.toFixed(0)} at $${position.entry.toFixed(4)}, current ~$${livePrice.toFixed(4)} (unrealized ${unrealizedPct}% / $${unrealizedUsd})`;
+  return `Open ${symbol}: $${position.sizeUsd.toFixed(0)} at $${position.entry.toFixed(4)}, current ~$${livePrice.toFixed(4)} (unrealized ${unrealizedPct}% / $${unrealizedUsd})`;
 }
-
-// Buy
+// handleBuy (skip if already open on symbol)
 async function handleBuy(sizeUsd = 100, entryPrice, symbol) {
-  sizeUsd = sizeUsd || 100;
-  const position = {
+  const position = await loadPosition(symbol);
+  if (position.open) return `Already open on ${symbol} - skipping add`;
+
+  const newPosition = {
     open: true,
     entry: entryPrice,
     sizeUsd: sizeUsd,
     time: new Date().toISOString(),
     symbol: symbol
   };
-  await savePosition(position);
+  await savePosition(newPosition);
   return `<b>BOUGHT</b>: $${sizeUsd} at $${entryPrice.toFixed(4)} (${symbol})`;
 }
 
-// Sell
-async function handleSell(exitPrice, symbol) {
+// handleSell (only if open on symbol)
+async function handleSell(exitPrice, symbol, asset) {
   const position = await loadPosition(symbol);
-  if (!position.open) return 'No position open for this asset';
+  if (!position.open) return `No open position on ${symbol} to sell`;
 
   const livePrice = await getLivePrice(asset) || exitPrice;
+
   const profit = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
   const trade = {
@@ -114,24 +114,24 @@ async function handleSell(exitPrice, symbol) {
     exit: livePrice,
     sizeUsd: position.sizeUsd,
     profit: profit.toFixed(2),
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
+    symbol: symbol
   };
   await addTrade(trade);
-  
-    // Explicit patch of existing row
+
   const closedPosition = {
-    id: position.id,  // key for patch
+    id: position.id,
     open: false,
     entry: null,
     sizeUsd: 0,
     time: null,
-    symbol: position.symbol
+    symbol: symbol
   };
   await savePosition(closedPosition);
 
   const { cumulative } = await loadTrades();
 
-  return `<b>SOLD</b>: $${position.sizeUsd} at $${livePrice.toFixed(2)}\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
+  return `<b>SOLD</b>: $${position.sizeUsd.toFixed(0)} at $${livePrice.toFixed(4)} (${symbol})\nProfit: $${profit.toFixed(2)}\nCumulative: $${cumulative.toFixed(2)}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell };
