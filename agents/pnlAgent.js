@@ -84,8 +84,9 @@ async function getPositionContext(signalPrice, symbol, asset) {
 
   return `Open ${symbol}: $${position.sizeUsd.toFixed(0)} at $${position.entry.toFixed(4)}, current ~$${livePrice.toFixed(4)} (unrealized ${unrealizedPct}% / $${unrealizedUsd})`;
 }
+
 // handleBuy (skip if already open on symbol)
-async function handleBuy(sizeUsd = 100, entryPrice, symbol) {
+async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
   const position = await loadPosition(symbol);
   if (position.open) return `Already open on ${symbol} - skipping add`;
 
@@ -101,7 +102,7 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol) {
 }
 
 // handleSell (only if open on symbol)
-async function handleSell(exitPrice, symbol, asset) {
+async function handleSell(exitPrice, symbol, asset = null) {
   const position = await loadPosition(symbol);
   if (!position.open) return `No open position on ${symbol} to sell`;
 
