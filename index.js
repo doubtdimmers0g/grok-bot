@@ -163,7 +163,7 @@ app.post('/webhook', async (req, res) => {
     console.log('Rare: Both buy and sell signals—Alpha will resolve');
   }
 
-  const positionContext = await getPositionContext(d.Price, asset);
+  const positionContext = await getPositionContext(d.Price, symbol);
   const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
@@ -192,10 +192,10 @@ if (marketReason && !marketReason.includes('unavailable')) {
   const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
   
   if (cleanVerdict === 'BUY' || cleanVerdict === 'YES') {
-    const buyMsg = await handleBuy(size, d.Price);
+    const buyMsg = await handleBuy(size, d.Price, symbol);
     executionNote = `<b>Trade executed:</b> ${buyMsg}\n\n`;
   } else if (cleanVerdict === 'SELL') {
-    const sellMsg = await handleSell(d.Price, asset);
+    const sellMsg = await handleSell(d.Price, symbol);
     executionNote = `<b>Trade executed:</b> ${sellMsg}\n\n`;
   }
   // SKIP/HOLD or unknown: no note, no trade
