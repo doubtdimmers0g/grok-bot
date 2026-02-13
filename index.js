@@ -14,40 +14,6 @@ let lastSignalData = null;
 let botReady = false;
 let offset = 0;
 
-// Dynamic assetMap - global
-let dynamicAssetMap = {};
-
-async function loadDynamicAssetMap() {
-  try {
-    const res = await axios.get('https://api.coingecko.com/api/v3/coins/list');
-    res.data.forEach(coin => {
-      const upperSymbol = coin.symbol.toUpperCase();
-      dynamicAssetMap[`${upperSymbol}USD`] = { cgId: coin.id, name: coin.name };
-      dynamicAssetMap[`${upperSymbol}USDT`] = { cgId: coin.id, name: coin.name };
-      dynamicAssetMap[upperSymbol] = { cgId: coin.id, name: coin.name };
-    });
-    console.log(`Dynamic assetMap loaded: ${Object.keys(dynamicAssetMap).length} entries`);
-  } catch (err) {
-    console.error('Failed to load dynamic assetMap:', err.message);
-  }
-}
-
-function getAsset(symbol) {
-  const upperSymbol = symbol.toUpperCase();
-  if (dynamicAssetMap[upperSymbol]) return dynamicAssetMap[upperSymbol];
-
-  const base = upperSymbol.replace(/USD?T?$/, '');
-  if (dynamicAssetMap[base + 'USD']) return dynamicAssetMap[base + 'USD'];
-  if (dynamicAssetMap[base + 'USDT']) return dynamicAssetMap[base + 'USDT'];
-  if (dynamicAssetMap[base]) return dynamicAssetMap[base];
-
-  console.warn(`Unknown symbol ${symbol} - falling back to BTC`);
-  return { cgId: 'bitcoin', name: 'Bitcoin' };
-}
-
-// Load the map once at startup
-loadDynamicAssetMap();
-
 const alphaAgent = require('./agents/alphaAgent');
 const buyAgent = require('./agents/buyAgent');
 const sellAgent = require('./agents/sellAgent');
@@ -131,7 +97,20 @@ app.post('/webhook', async (req, res) => {
   const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
   const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';
 
-  const asset = getAsset(symbol);
+  // Add asset resolution (hardcoded map)
+  const assetMap = {
+    'BTCUSD': { cgId: 'bitcoin', name: 'Bitcoin' },
+    'ETHUSD': { cgId: 'ethereum', name: 'Ethereum' },
+    'SOLUSD': { cgId: 'solana', name: 'Solana' },
+    'SUIUSD': { cgId: 'sui', name: 'Sui' },
+    'XRPUSD': { cgId: 'ripple', name: 'XRP' },
+    'AEROUSD': { cgId: 'aerodrome-finance', name: 'Aerodrome' },
+    'ONDOUSD': { cgId: 'ondo-finance', name: 'Ondo' },
+    'HBARUSD': { cgId: 'hedera', name: 'Hedera' },
+    'SEIUSD': { cgId: 'sei-network', name: 'Sei' },
+    // add USDT variants if needed
+  };
+  const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback
    
   const d = parsePayload(payload);
   if (!d.Price) return console.log('Invalid payload');
@@ -210,7 +189,6 @@ if (marketReason && !marketReason.includes('unavailable')) {
 });
 
 async function startServer() {
-  await loadDynamicAssetMap();  // wait for map
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Bot running on port ${PORT} - replies after first signal`));
 }
