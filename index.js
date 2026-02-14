@@ -146,13 +146,10 @@ app.post('/webhook', async (req, res) => {
   const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
-let positionNote = '';
-if (positionContext.includes('No open position')) {
-  positionNote = `<b>Current position:</b> Flat - no open position\n\n`;
-} else if (positionContext.includes('Open')) {
-  positionNote = `<b>Current position:</b> ${positionContext}\n\n`;
+let positionNote = '<b>Current position:</b> Flat - no open position\n\n';
+if (positionContext && positionContext.includes('open position')) {  // Broader match for any open case
+  positionNote = `<b>Current position:</b> ${positionContext.trim()}\n\n`;
 }
-// Else empty if error, but unlikely
 
 let marketNote = '';
 if (marketReason && !marketReason.includes('unavailable')) {
