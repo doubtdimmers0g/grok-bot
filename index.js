@@ -94,8 +94,9 @@ app.post('/webhook', async (req, res) => {
   console.log('Payload received:\n', payload);
 
   // Symbol parsing early
-  const symbolMatch = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i);
-  const symbol = symbolMatch ? symbolMatch[1].toUpperCase() : 'BTCUSD';
+const symbolRaw = payload.match(/Symbol[:\s]*([A-Z0-9]+USD?T?)/i)?.[1] || 'BTCUSD';
+let symbol = symbolRaw.toUpperCase().replace(/USDT$/i, 'USD');  // Normalize USDT to USD
+if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
 
   // Add asset resolution (hardcoded map)
   const assetMap = {
