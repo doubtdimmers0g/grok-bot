@@ -174,6 +174,13 @@ if (marketReason && !marketReason.includes('unavailable')) {
     
     // Add after buyMsg = await handleBuy(...)
     if (buyMsg.includes('BOUGHT')) {
+    try {
+      const res = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?open=eq.true&select=id`, { headers });
+      const totalOpens = res.data.length;
+      console.log(`Opened position on ${symbol} — total concurrent opens: ${totalOpens}`);
+    } catch (err) {
+      console.error('Open count error:', err.message);
+    }
     executionNote = `<b>Trade executed:</b> ${buyMsg}\n\n`;
   } else if (cleanVerdict === 'SELL') {
     const sellMsg = await handleSell(d.Price, symbol, asset);
