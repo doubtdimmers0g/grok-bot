@@ -50,7 +50,7 @@ async function getPositionContext(signalPrice, symbol, asset) {
 
   return {
     isOpen: true,
-    symbol,
+    symbol: symbol,
     entryPrice: position.entry_price,
     notional: position.notional,
     unrealizedPct: parseFloat(unrealizedPct),
@@ -64,7 +64,7 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
   if (position.open) return `Already open on ${symbol} - skipping`;
 
   const newPosition = {
-    symbol,
+    symbol: symbol,
     entry_price: entryPrice,
     notional: sizeUsd,
     open: true,
@@ -84,7 +84,7 @@ async function handleSell(exitPrice, symbol, asset = null) {
   const profit = (livePrice - position.entry_price) * (position.notional / position.entry_price);
 
   const trade = {
-    symbol,
+    symbol: symbol,
     entry_price: position.entry_price,
     exit_price: livePrice,
     notional: position.notional,
