@@ -45,6 +45,12 @@ async function getPositionContext(signalPrice, symbol, asset) {
     return { isOpen: false };
   }
 
+  // Resilience guard - add this block
+    if (typeof position.entry !== 'number' || position.entry <= 0 || typeof position.sizeUsd !== 'number' || position.sizeUsd <= 0) {
+      console.warn(`Invalid position data for ${symbol} (missing or invalid entry/sizeUsd) - treating as closed`);
+      return { isOpen: false };
+    }
+
   const livePrice = await getLivePrice(asset) || signalPrice;  // live preferred, fallback signal
   const unrealizedPct = ((livePrice - position.entry) / position.entry * 100).toFixed(2);
 
@@ -79,6 +85,12 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
 async function handleSell(exitPrice, symbol, asset = null) {
   const position = await loadPosition(symbol);
   if (!position.open) return `No open position on ${symbol} to sell`;
+
+  // Resilience guard - add this block
+  if (typeof position.entry !== 'number' || position.entry <= 0 || typeof position.sizeUsd !== 'number' || position.sizeUsd <= 0) {
+    console.warn(`Invalid position data for ${symbol} - cannot sell (missing/invalid entry or sizeUsd)`);
+    return `Invalid open position data for ${symbol} - skipping sell (check DB)`;
+  }
 
   const livePrice = await getLivePrice(asset) || exitPrice;
   const profit = (livePrice - position.entry) * (position.sizeUsd / position.entry);
