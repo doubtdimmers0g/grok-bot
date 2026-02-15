@@ -52,7 +52,7 @@ async function getPositionContext(signalPrice, symbol, asset) {
     isOpen: true,
     symbol: symbol,
     entryPrice: position.entry,
-    notional: position.notional,
+    sizeUsd: position.sizeUsd,
     unrealizedPct: parseFloat(unrealizedPct),
     details: `Long ${symbol} @ $${position.entry.toFixed(2)} (Unrealized: ${unrealizedPct > 0 ? '+' : ''}${unrealizedPct}%)`
   };
@@ -66,7 +66,7 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
   const newPosition = {
     symbol: symbol,
     entry: entryPrice,
-    notional: sizeUsd,
+    sizeUsd: sizeUsd,
     open: true,
     entry_time: new Date().toISOString()  // if you have column
   };
@@ -81,13 +81,13 @@ async function handleSell(exitPrice, symbol, asset = null) {
   if (!position.open) return `No open position on ${symbol} to sell`;
 
   const livePrice = await getLivePrice(asset) || exitPrice;
-  const profit = (livePrice - position.entry) * (position.notional / position.entry);
+  const profit = (livePrice - position.entry) * (position.sizeUsd / position.entry);
 
   const trade = {
     symbol: symbol,
     entry: position.entry,
     exit_price: livePrice,
-    notional: position.notional,
+    sizeUsd: position.sizeUsd,
     profit: profit.toFixed(2),
     exit_time: new Date().toISOString()
   };
@@ -95,11 +95,11 @@ async function handleSell(exitPrice, symbol, asset = null) {
 
   // Close position
   await axios.patch(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&open=eq.true`, 
-    { open: false, entry: null, notional: 0 }, { headers });
+    { open: false, entry: null, sizeUsd: 0 }, { headers });
 
   // Optional: reload cumulative here or in index.js
 
-  return `<b>SOLD</b>: $${position.notional.toFixed(0)} at $${livePrice.toFixed(4)} (${symbol})\nProfit: $${profit.toFixed(2)}`;
+  return `<b>SOLD</b>: $${position.sizeUsd.toFixed(0)} at $${livePrice.toFixed(4)} (${symbol})\nProfit: $${profit.toFixed(2)}`;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell, loadPosition /* if needed elsewhere */ };
