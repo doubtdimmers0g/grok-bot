@@ -46,15 +46,15 @@ async function getPositionContext(signalPrice, symbol, asset) {
   }
 
   const livePrice = await getLivePrice(asset) || signalPrice;  // live preferred, fallback signal
-  const unrealizedPct = ((livePrice - position.entry_price) / position.entry_price * 100).toFixed(2);
+  const unrealizedPct = ((livePrice - position.entry) / position.entry * 100).toFixed(2);
 
   return {
     isOpen: true,
     symbol: symbol,
-    entryPrice: position.entry_price,
+    entryPrice: position.entry,
     notional: position.notional,
     unrealizedPct: parseFloat(unrealizedPct),
-    details: `Long ${symbol} @ $${position.entry_price.toFixed(2)} (Unrealized: ${unrealizedPct > 0 ? '+' : ''}${unrealizedPct}%)`
+    details: `Long ${symbol} @ $${position.entry.toFixed(2)} (Unrealized: ${unrealizedPct > 0 ? '+' : ''}${unrealizedPct}%)`
   };
 }
 
@@ -65,7 +65,7 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
 
   const newPosition = {
     symbol: symbol,
-    entry_price: entryPrice,
+    entry: entryPrice,
     notional: sizeUsd,
     open: true,
     entry_time: new Date().toISOString()  // if you have column
@@ -81,11 +81,11 @@ async function handleSell(exitPrice, symbol, asset = null) {
   if (!position.open) return `No open position on ${symbol} to sell`;
 
   const livePrice = await getLivePrice(asset) || exitPrice;
-  const profit = (livePrice - position.entry_price) * (position.notional / position.entry_price);
+  const profit = (livePrice - position.entry) * (position.notional / position.entry);
 
   const trade = {
     symbol: symbol,
-    entry_price: position.entry_price,
+    entry: position.entry,
     exit_price: livePrice,
     notional: position.notional,
     profit: profit.toFixed(2),
@@ -95,7 +95,7 @@ async function handleSell(exitPrice, symbol, asset = null) {
 
   // Close position
   await axios.patch(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&open=eq.true`, 
-    { open: false, entry_price: null, notional: 0 }, { headers });
+    { open: false, entry: null, notional: 0 }, { headers });
 
   // Optional: reload cumulative here or in index.js
 
