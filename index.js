@@ -147,8 +147,9 @@ app.post('/webhook', async (req, res) => {
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
 let positionNote = '<b>Current position:</b> Flat - no open position\n\n';
-if (positionContext && positionContext.includes('open position')) {  // Broader match for any open case
-  positionNote = `<b>Current position:</b> ${positionContext.trim()}\n\n`;
+
+if (positionContext.isOpen) {
+  positionNote = `<b>Current position:</b> ${positionContext.details}\n\n`;
 }
 
 let marketNote = '';
