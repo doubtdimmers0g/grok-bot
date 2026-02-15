@@ -68,7 +68,7 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
     entry: entryPrice,
     sizeUsd: sizeUsd,
     open: true,
-    entry_time: new Date().toISOString()  // if you have column
+    time: new Date().toISOString()  // if you have column
   };
   await axios.post(`${SUPABASE_URL}/rest/v1/current_position`, newPosition, { headers });
 
@@ -86,10 +86,10 @@ async function handleSell(exitPrice, symbol, asset = null) {
   const trade = {
     symbol: symbol,
     entry: position.entry,
-    exit_price: livePrice,
+    exit: livePrice,
     sizeUsd: position.sizeUsd,
     profit: profit.toFixed(2),
-    exit_time: new Date().toISOString()
+    time: new Date().toISOString()
   };
   await axios.post(`${SUPABASE_URL}/rest/v1/trades`, trade, { headers });
 
