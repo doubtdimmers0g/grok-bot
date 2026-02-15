@@ -95,7 +95,7 @@ async function handleSell(exitPrice, symbol, asset = null) {
 
   // Close position
   await axios.patch(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&open=eq.true`, 
-    { open: false, entry: null, sizeUsd: 0 }, { headers });
+    { open: false }, { headers });
 
   // Optional: reload cumulative here or in index.js
 
