@@ -125,9 +125,21 @@ async function handleSell(exitPrice, symbol, asset = null) {
   await axios.patch(`${SUPABASE_URL}/rest/v1/current_position?symbol=eq.${symbol}&open=eq.true`, 
     { open: false }, { headers });
 
-  // Optional: reload cumulative here or in index.js
+  // Mutable message for optional enrichment
+  let message = `<b>SOLD</b>: $${position.sizeUsd.toFixed(0)} at $${livePrice.toFixed(4)} (${symbol})\n` +
+                `Profit: ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`;
 
-  return `<b>SOLD</b>: $${position.sizeUsd.toFixed(0)} at $${livePrice.toFixed(4)} (${symbol})\nProfit: $${profit.toFixed(2)}`;
+  // Mirror the buy-side open count feedback
+  try {
+    const { data: opens } = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?open=eq.true&select=id`, { headers });
+    const totalOpens = opens.length;
+    console.log(`Closed position on ${symbol} — total concurrent opens now: ${totalOpens}`);
+    message += `\n(Open positions now: ${totalOpens})`;
+  } catch (err) {
+    console.error('Failed to count open positions after sell:', err.message);
+  }
+
+  return message;
 }
 
 module.exports = { getPositionContext, handleBuy, handleSell, loadPosition /* if needed elsewhere */ };
