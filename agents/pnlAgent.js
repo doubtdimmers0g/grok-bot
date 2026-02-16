@@ -78,20 +78,23 @@ async function handleBuy(sizeUsd = 100, entryPrice, symbol, asset = null) {
   };
   await axios.post(`${SUPABASE_URL}/rest/v1/current_position`, newPosition, { headers });
 
+  // Declare the message as let so we can append to it
+  let message = `<b>BOUGHT</b>: $${sizeUsd} at $${entryPrice.toFixed(4)} (${symbol})`;
+
   // Count and log open positions after successful buy
   try {
     const { data: opens } = await axios.get(`${SUPABASE_URL}/rest/v1/current_position?open=eq.true&select=id`, { headers });
     const totalOpens = opens.length;
     console.log(`Opened position on ${symbol} — total concurrent opens: ${totalOpens}`);
-  
-    // Optional but nice: include in the return message for TG visibility
-    buyMsg += `\n(Open positions now: ${totalOpens})`;
+
+    // Append the count to the Telegram message (visible to you)
+    message += `\n(Open positions now: ${totalOpens})`;
   } catch (err) {
     console.error('Failed to count open positions after buy:', err.message);
-    // Still proceed - don't block the buy confirmation
+    // Non-blocking — we still confirm the buy even if count fails
   }
 
-  return `<b>BOUGHT</b>: $${sizeUsd} at $${entryPrice.toFixed(4)} (${symbol})`;
+  return message;  // Now possibly enriched with open count
 }
 
 // handleSell
