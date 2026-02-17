@@ -107,7 +107,7 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
     'XRPUSD': { cgId: 'ripple', name: 'XRP' },
     'AEROUSD': { cgId: 'aerodrome-finance', name: 'Aerodrome' },
     'ONDOUSD': { cgId: 'ondo-finance', name: 'Ondo' },
-    'HBARUSD': { cgId: 'hedera', name: 'Hedera' },
+    'HBARUSD': { cgId: 'hedera-hashgraph', name: 'Hedera' },
     'SEIUSD': { cgId: 'sei-network', name: 'Sei' },
     'LINKUSD': { cgId: 'chainlink', name: 'Chainlink' },
     'MORPHOUSD': { cgId: 'morpho', name: 'Morpho' },
