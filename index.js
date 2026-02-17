@@ -109,6 +109,8 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
     'ONDOUSD': { cgId: 'ondo-finance', name: 'Ondo' },
     'HBARUSD': { cgId: 'hedera', name: 'Hedera' },
     'SEIUSD': { cgId: 'sei-network', name: 'Sei' },
+    'LINKUSD': { cgId: 'chainlink', name: 'Chainlink' },
+    'MORPHOUSD': { cgId: 'morpho', name: 'Morpho' },
     // add USDT variants if needed
   };
   const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback
