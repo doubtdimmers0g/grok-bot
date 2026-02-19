@@ -1,4 +1,4 @@
-async function buyAgent(grok, data, ratio, asset, positionStatus = 'No open position on SYMBOL' ) {
+async function buyAgent(grok, data, ratio, asset, positionStatus = 'No open position on SYMBOL') {
   const prompt = `You are a crypto spot buy analyst for ${asset.name}.
 
 Current position status: ${positionStatus}
@@ -9,10 +9,10 @@ Rules (very important):
 - If there is already an open position, you MUST output SKIP.
 
 Current data:
-- Price: $${data.Price.toFixed(2)}
-- RSI (14): ${data.RSI.toFixed(2)} (oversold <40 = dip support)
-- Quote Volume (USD): ${data['Quote Volume'].toFixed(0)}
-- Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
+- Price: $${data.Price ? data.Price.toFixed(2) : 'N/A'}
+- RSI (14): ${data.RSI ? data.RSI.toFixed(2) : 'N/A'} (oversold <40 = dip support)
+- Quote Volume (USD): ${data['Quote Volume'].toFixed(0) : 'N/A'}
+- Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0) : 'N/A'}
 - Ratio: ${ratio}x (positive >1.0x = edge, strong >1.3x = conviction)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
 - OBV MA (21): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
