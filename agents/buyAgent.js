@@ -3,7 +3,7 @@ async function buyAgent(grok, data, ratio, asset, positionStatus = 'No open posi
 
 Current position status: ${positionStatus}
 
-TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
+TBO Pro has signaled Open Long — evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
 
 Rules (very important):
 - If there is already an open position, you MUST output SKIP.
