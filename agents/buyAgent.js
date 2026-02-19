@@ -11,7 +11,7 @@ Rules (very important):
 Current data:
 - Price: $${data.Price ? data.Price.toFixed(2) : 'N/A'}
 - RSI (14): ${data.RSI ? data.RSI.toFixed(2) : 'N/A'} (oversold <40 = dip support)
-- Quote Volume (USD): ${data['Quote Volume'].toFixed(0) : 'N/A'}
+- Quote Volume (USD): ${data['Quote Volume'] ? data['Quote Volume'].toFixed(0) : 'N/A'}
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0) : 'N/A'}
 - Ratio: ${ratio}x (positive >1.0x = edge, strong >1.3x = conviction)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
