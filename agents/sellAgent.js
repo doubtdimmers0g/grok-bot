@@ -10,8 +10,8 @@ Rules (very important):
 - Only analyze exit if there is actually an open position.
 
 Current data:
-- Price: $${data.Price.toFixed(2) : 'N/A'}
-- RSI (14): ${data.RSI.toFixed(2) : 'N/A'} (overbought >70 = potential exit pressure)
+- Price: $${data.Price ? data.Price.toFixed(2) : 'N/A'}
+- RSI (14): ${data.RSI ? data.RSI.toFixed(2) : 'N/A'} (oversold >70 = potential exit pressue)
 - Quote Volume (USD): ${data['Quote Volume'] ? data['Quote Volume'].toFixed(0) : 'N/A'}
 - Quote SMA (30): ${data['Quote Volume SMA'] ? data['Quote Volume SMA'].toFixed(0) : 'N/A'}
 - Ratio: ${ratio}x (weak <1.0x = distribution risk, very weak <0.7x = strong fade)
