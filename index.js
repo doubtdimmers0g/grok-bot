@@ -119,11 +119,21 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   if (!d.Price) return console.log('Invalid payload');
 
   d.Symbol = symbol;  // for agents/future mapping
-
   lastSignalData = d;
   botReady = true;
 
   const ratio = d['Quote Volume'] && d['Quote Volume SMA'] ? (d['Quote Volume'] / d['Quote Volume SMA']).toFixed(2) : null;
+
+  const positionContext = await getPositionContext(d.Price, symbol, asset);
+
+  //Clean, consistent string for agents AND Telegram
+  let positionStatus = `No open position on ${symbol}`;
+  let positionNote = `<b>Current position:</b> No open position on ${symbol}\n\n`;
+  
+  if (positionContext.isOpen) {
+    positionStatus = positionContext.details;
+    positionNote = `<b>Current position:</b> ${positionContext.details}\n\n`;
+  }
 
   let buyVerdict = null;
   let sellVerdict = null;
@@ -145,32 +155,19 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
     console.log('Rare: Both buy and sell signals—Alpha will resolve');
   }
 
-  const positionContext = await getPositionContext(d.Price, symbol, asset);
   const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
-//Clean, consistent string for agents AND Telegram
-let positionStatus = `No open position on ${symbol}`;
-let positionNote = `<b>Current position:</b> No open position on ${symbol}\n\n`;
-
-if (positionContext.isOpen) {
-  positionStatus = positionContext.details
-  positionNote = `<b>Current position:</b> ${positionContext.details}\n\n`;
-}
-
-let marketNote = '';
-if (marketReason && !marketReason.includes('unavailable')) {
-  marketNote = `<b>Market Context:</b>\n${marketReason}\n\n`;
-} else {
-  marketNote = `<b>Market Context:</b> Data unavailable\n\n`;  // fallback grace
-}
+  let marketNote = '';
+  if (marketReason && !marketReason.includes('unavailable')) {
+    marketNote = `<b>Market Context:</b>\n${marketReason}\n\n`;
+  } else {
+    marketNote = `<b>Market Context:</b> Data unavailable\n\n`;
+  }
 
   let size = 100;
+  let executionNote = ''; 
 
-  // Execution
-  let executionNote = '';  // default empty if no trade 
-
-  // Extract clean verdict
   const verdictMatch = finalVerdict.match(/FINAL VERDICT:\s*(BUY|SELL|SKIP|HOLD|YES)/i);
   const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
   
