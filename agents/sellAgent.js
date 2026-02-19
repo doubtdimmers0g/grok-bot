@@ -15,9 +15,12 @@ Rules (very important):
 
 Current data:
 - Price: $${data.Price.toFixed(2)}
-- RSI (14): ${data.RSI.toFixed(2)}
-- Ratio: ${ratio}x (weak <1.0x = distribution)
-- OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'} vs MA (21): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
+- RSI (14): ${data.RSI.toFixed(2)} (oversold <40 = dip support)
+- Quote Volume (USD): ${data['Quote Volume'].toFixed(0)}
+- Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
+- Ratio: ${ratio}x (positive >1.0x = edge, strong >1.3x = conviction)
+- OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
+- OBV MA (21): ${data['OBV MA'] ? data['OBV MA'].toFixed(0) : 'N/A'}
 
 Think step by step and follow rules strictly to determine if TBO Close Long + weak ratio + momentum fade confirm exit.
 
