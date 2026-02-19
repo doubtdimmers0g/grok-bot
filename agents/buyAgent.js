@@ -6,7 +6,7 @@ Current position status: ${positionStatus}
 TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
 
 Rules (very important):
-- If there is already an open position for ${asset.name}, you MUST output PASS.
+- If there is already an open position, you MUST output SKIP.
 
 Current data:
 - Price: $${data.Price.toFixed(2)}
@@ -26,11 +26,10 @@ Think step by step:
 
 Verdict rules:
 - BUY if TBO alignment + supportive data (ratio >1.0x, low risks).
-- SKIP if marginal, traps, or data contradicts TBO.
-- PASS if there is already an open position for ${asset.name}. 
+- SKIP if marginal, traps, or data contradicts TBO or if there is already an open position for ${asset.name}.
 
 Exact format:
-VERDICT: BUY / SKIP / PASS
+VERDICT: BUY / SKIP
 REASON: 2-4 sentences.`;
 
   try {
