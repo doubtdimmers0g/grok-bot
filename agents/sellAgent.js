@@ -1,4 +1,4 @@
-async function sellAgent(grok, data, ratio, asset) {
+async function sellAgent(grok, data, ratio, asset, positionContext) {
   const prompt = `You are a crypto spot sell analyst for ${asset.name}. 
 
 Current position status: ${positionContext || 'Flat - no open position'}
