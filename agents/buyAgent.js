@@ -1,10 +1,17 @@
-async function buyAgent(grok, data, ratio, asset) {
-  const prompt = `You are a crypto spot buy analyst for ${asset.name}. TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
+async function buyAgent(grok, data, ratio, asset, positionStatus = 'No open position on SYMBOL' ) {
+  const prompt = `You are a crypto spot buy analyst for ${asset.name}.
+
+Current position status: ${positionStatus}
+
+TBO Pro has signaled Open Long—evaluate if this aligns with positive inflow conviction, low trap risk, and supportive momentum for a safe accumulation.
+
+Rules (very important):
+- If there is already an open position for ${asset.name}, you MUST output PASS.
 
 Current data:
 - Price: $${data.Price.toFixed(2)}
 - RSI (14): ${data.RSI.toFixed(2)} (oversold <40 = dip support)
-- Quote Volume USDT: ${data['Quote Volume'].toFixed(0)}
+- Quote Volume (USD): ${data['Quote Volume'].toFixed(0)}
 - Quote SMA (30): ${data['Quote Volume SMA'].toFixed(0)}
 - Ratio: ${ratio}x (positive >1.0x = edge, strong >1.3x = conviction)
 - OBV: ${data.OBV ? data.OBV.toFixed(0) : 'N/A'}
@@ -20,10 +27,11 @@ Think step by step:
 Verdict rules:
 - BUY if TBO alignment + supportive data (ratio >1.0x, low risks).
 - SKIP if marginal, traps, or data contradicts TBO.
+- PASS if there is already an open position for ${asset.name}. 
 
 Exact format:
-VERDICT: BUY / SKIP
-REASON: 2-4 sentences on TBO alignment, ratio (priority), RSI, momentum, risk.`;
+VERDICT: BUY / SKIP / PASS
+REASON: 2-4 sentences.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
