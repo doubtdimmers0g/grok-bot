@@ -14,15 +14,16 @@ Think step by step:
 3. Market momentum: Volume/change confirming trend for this asset?
 4. Overall: Legit opportunity or trap for the signaled asset?
 
-Verdict rules:
-- BUY on strong consensus + clean context for the signaled asset (open new if none for this coin).
-- SELL on fading + risk for the signaled asset (close if open for this coin).
-- HOLD on open with momentum for the signaled asset.
-- SKIP marginal or contradicting data.
+Verdict rules (strict):
+- BUY only on strong buy-agent consensus + no open position + clean market context.
+- SELL only on strong sell-agent consensus + open position on this asset.
+- PASS if the signal is marginal, trap risk is high, or data does not justify action (even if position allows it).
+- SKIP only if position rules prevent action (e.g. already open on buy, flat on sell).
+- HOLD only if open position and shows continued momentum.
 
 Exact format:
-FINAL VERDICT: BUY / SELL / HOLD / SKIP
-REASON: 3-5 sentences synthesizing inputs, market, position per asset, risk.`;
+FINAL VERDICT: BUY / SELL / PASS / SKIP / HOLD
+REASON: 3-5 sentences synthesizing sub-agent verdicts, position status, market context, and risk.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
