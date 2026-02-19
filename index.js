@@ -131,10 +131,10 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
 
   if (lowerPayload.includes("buy conditions")) {
     tgHeader = `<b>1H ${asset.name || symbol} Buy Signal</b>`;
-    buyVerdict = await buyAgent(grok, d, ratio, asset);
+    buyVerdict = await buyAgent(grok, d, ratio, asset, positionStatus);
   } else if (lowerPayload.includes("sell conditions")) {
     tgHeader = `<b>1H ${asset.name || symbol} Sell Signal</b>`;
-    sellVerdict = await sellAgent(grok, d, ratio, asset);
+    sellVerdict = await sellAgent(grok, d, ratio, asset, positionStatus);
   } else {
     console.log('Unknown signal type - skipping');
     return;
@@ -149,9 +149,12 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   const marketReason = await getMarketReasoning(grok, asset);
   const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
 
-let positionNote = '<b>Current position:</b> Flat - no open position\n\n';
+//Clean, consistent string for agents AND Telegram
+let positionStatus = `No open position on ${symbol}`;
+let positionNote = `<b>Current position:</b> No open position on ${symbol}\n\n`;
 
 if (positionContext.isOpen) {
+  positionStatus = positionContext.details
   positionNote = `<b>Current position:</b> ${positionContext.details}\n\n`;
 }
 
