@@ -27,10 +27,11 @@ Think step by step:
 
 Verdict rules:
 - SELL if open position + clear distribution or fading momentum signals.
-- SKIP if no open position, or momentum still neutral/decent, or data does not strongly support exit.
+- PASS if signal is marginal or momentum still neutral/decent (strategic decision).
+- SKIP only if no open position (mechanical rule).
 
 Exact format:
-VERDICT: SELL / SKIP
+VERDICT: SELL / PASS / SKIP
 REASON: 2-4 sentences.`;
 
   try {
