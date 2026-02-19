@@ -25,11 +25,12 @@ Think step by step:
 5. Overall: Safe low-risk entry?
 
 Verdict rules:
-- BUY if TBO alignment + supportive data (ratio >1.0x, low risks).
-- SKIP if marginal, traps, or data contradicts TBO or if there is already an open position for ${asset.name}.
+- BUY if no open position + TBO alignment + supportive data (ratio >1.0x, low risks).
+- PASS if signal is marginal, traps present, or data contradicts TBO (strategic decision).
+- SKIP only if already open (mechanical rule).
 
 Exact format:
-VERDICT: BUY / SKIP
+VERDICT: BUY / PASS / SKIP
 REASON: 2-4 sentences.`;
 
   try {
