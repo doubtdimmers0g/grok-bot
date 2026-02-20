@@ -31,9 +31,27 @@ function parsePayload(text) {
   return data;
 }
 
+let telegramQueue = [];
+let isSending = false;
+
 async function sendTelegram(chatId, message) {
-  const url = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`;
+  return new Promise((resolve) => {
+    telegramQueue.push({ chatId, message, resolve });
+
+    if (!isSending) {
+      processQueue();
+    }
+  });
+}
+
+async function processQueue() {
+  if (isSending || telegramQueue.length === 0) return;
+
+  isSending = true;
+  const { chatId, message, resolve } = telegramQueue.shift();
+
   try {
+    const url = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`;
     await axios.post(url, {
       chat_id: chatId,
       text: message,
@@ -43,6 +61,14 @@ async function sendTelegram(chatId, message) {
   } catch (err) {
     console.error('Telegram send error:', err.message);
   }
+
+  resolve();
+
+  // Safe delay between messages (Telegram likes ~800ms+ between sends)
+  setTimeout(() => {
+    isSending = false;
+    processQueue();
+  }, 900);
 }
 
 // Polling for replies
