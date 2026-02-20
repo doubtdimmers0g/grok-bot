@@ -17,8 +17,9 @@ let offset = 0;
 const alphaAgent = require('./agents/alphaAgent');
 const buyAgent = require('./agents/buyAgent');
 const sellAgent = require('./agents/sellAgent');
-const { getPositionContext, handleBuy, handleSell } = require('./agents/pnlAgent');
+const { getPositionContext, handleBuy, handleSell, SUPABASE_URL, headers } = require('./agents/pnlAgent');
 const { getMarketReasoning } = require('./agents/marketdataAgent');
+const { getValidationReport } = require('./agents/validationAgent');
 
 function parsePayload(text) {
   const data = {};
@@ -80,8 +81,13 @@ async function pollUpdates() {
       offset = update.update_id + 1;
       if (update.message && update.message.text && botReady) {  // only reply after first signal
         const chatId = update.message.chat.id;
+        
         const userText = update.message.text.trim();
-
+        if (userText.toLowerCase() === '/validate') {
+          const report = await getValidationReport();
+          await sendTelegram(chatId, report);
+          return;
+        }
         const replyPrompt = `User follow-up on last signal: "${userText}"
 
 Last signal data for context:
@@ -194,9 +200,18 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   let size = 100;
   let executionNote = ''; 
 
-  const verdictMatch = finalVerdict.match(/FINAL VERDICT:\s*(BUY|SELL|SKIP|HOLD|YES)/i);
+  const verdictMatch = finalVerdict.match(/FINAL VERDICT:\s*(BUY|SELL|PASS|SKIP|HOLD|YES)/i);
   const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
-  
+    // Log every signal for validation tracking
+    const signalType = lowerPayload.includes("buy conditions") ? 'BUY_SIGNAL' : 'SELL_SIGNAL';
+    await axios.post(`${SUPABASE_URL}/rest/v1/signals`, {
+      symbol,
+      signal_type: signalType,
+      final_verdict: cleanVerdict,
+      ratio: ratio ? parseFloat(ratio) : null,
+      price: d.Price
+    }, { headers }).catch(err => console.error('Signal log error:', err.message));
+    
   if (cleanVerdict === 'BUY' || cleanVerdict === 'YES') {
     const buyMsg = await handleBuy(size, d.Price, symbol, asset);
     
