@@ -81,13 +81,16 @@ async function pollUpdates() {
       offset = update.update_id + 1;
       if (update.message && update.message.text && botReady) {  // only reply after first signal
         const chatId = update.message.chat.id;
-        
         const userText = update.message.text.trim();
+
+        console.log('Received Telegram message:', userText);  // debug line — you’ll see this in Render logs
+
         if (userText.toLowerCase() === '/validate') {
           const report = await getValidationReport();
           await sendTelegram(chatId, report);
           return;
         }
+
         const replyPrompt = `User follow-up on last signal: "${userText}"
 
 Last signal data for context:
