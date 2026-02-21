@@ -230,7 +230,7 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   console.log(`Sub: Buy: ${buyVerdict || 'N/A'} | Sell: ${sellVerdict || 'N/A'}`);
   console.log('\nAlpha final:\n', finalVerdict);
 
-  const tgMessage = `${tgHeader}\nPrice: $${d.Price ? d.Price.toFixed(2) : 'N/A'}\nRSI: ${d.RSI ? d.RSI.toFixed(2) : 'N/A'}\nRatio: ${ratio ? ratio + 'x' : 'N/A'}\n\n${positionNote}${marketNote}<b>Buy Agent:</b>\n${buyVerdict || 'No buy signal'}\n\n<b>Sell Agent:</b>\n${sellVerdict || 'No sell signal'}\n\n<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
+  const tgMessage = `${tgHeader}\nPrice: $${d.Price ? d.Price.toFixed(2) : 'N/A'}\nRSI: ${d.RSI ? d.RSI.toFixed(2) : 'N/A'}\nRatio: ${ratio ? ratio + 'x' : 'N/A'}\n\n${positionNote}${marketNote}<b>Alpha Final:</b>\n${finalVerdict}\n\n${executionNote}Reply for follow-up.`;
 
   await sendTelegram(process.env.TELEGRAM_CHAT_ID, tgMessage);
 });
