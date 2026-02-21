@@ -79,7 +79,7 @@ async function pollUpdates() {
     const res = await axios.get(url);
     for (const update of res.data.result) {
       offset = update.update_id + 1;
-      if (update.message && update.message.text && botReady) {  // only reply after first signal
+      if (update.message && update.message.text) {  // only reply after first signal
         const chatId = update.message.chat.id;
         const userText = update.message.text.trim();
 
