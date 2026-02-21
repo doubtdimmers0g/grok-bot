@@ -142,4 +142,4 @@ async function handleSell(exitPrice, symbol, asset = null) {
   return message;
 }
 
-module.exports = { getPositionContext, handleBuy, handleSell, loadPosition /* if needed elsewhere */ };
+module.exports = { getPositionContext, handleBuy, handleSell, loadPosition, SUPABASE_URL, headers /* if needed elsewhere */ };
