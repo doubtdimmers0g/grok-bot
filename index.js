@@ -208,14 +208,19 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
     
   // Log every signal for validation tracking
   const signalType = lowerPayload.includes("buy conditions") ? 'BUY_SIGNAL' : 'SELL_SIGNAL';
-  await axios.post(`${SUPABASE_URL}/rest/v1/signals`, {
-    symbol,
-    signal_type: signalType,
-    final_verdict: cleanVerdict,
-    ratio: ratio ? parseFloat(ratio) : null,
-    price: d.Price
-  }, { headers }).catch(err => console.error('Signal log error:', err.message));
-
+  try {
+    await axios.post(`${SUPABASE_URL}/rest/v1/signals`, {
+      symbol,
+      signal_type: signalType,
+      final_verdict: cleanVerdict,
+      ratio: ratio ? parseFloat(ratio) : null,
+      price: d.Price
+    }, { headers });
+    console.log(`✅ Signal logged: ${symbol} ${signalType} → ${cleanVerdict}`);
+  } catch (err) {
+    console.error(`❌ Signal log FAILED for ${symbol}:`, err.message);
+  }
+  
   if (cleanVerdict === 'BUY' || cleanVerdict === 'YES') {
     const buyMsg = await handleBuy(size, d.Price, symbol, asset);
     
