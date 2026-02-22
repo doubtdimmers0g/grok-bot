@@ -88,7 +88,7 @@ async function pollUpdates() {
         if (userText.toLowerCase() === '/validate') {
           const report = await getValidationReport();
           await sendTelegram(chatId, report);
-          return;
+          continue;
         }
 
         const replyPrompt = `User follow-up on last signal: "${userText}"
