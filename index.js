@@ -86,8 +86,11 @@ async function pollUpdates() {
         console.log('Received Telegram message:', userText);  // debug line — you’ll see this in Render logs
 
         if (userText.toLowerCase() === '/validate') {
+          console.log('Processing /validate command...');
           const report = await getValidationReport();
           await sendTelegram(chatId, report);
+          console.log('Validation report sent');
+          // NO return; here — let the loop continue
           continue;
         }
 
