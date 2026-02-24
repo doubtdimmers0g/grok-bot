@@ -149,7 +149,12 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
     'SEIUSD': { cgId: 'sei-network', name: 'Sei' },
     'LINKUSD': { cgId: 'chainlink', name: 'Chainlink' },
     'MORPHOUSD': { cgId: 'morpho', name: 'Morpho' },
-    // add USDT variants if needed
+    'AVAXUSD': { cgId: 'avalanche-2', name: 'Avalanche' },
+    'HYPEUSD': { cgId: 'hyperliquid', name: 'Hyperliquid' },
+    'MNTUSD': { cgId: 'mantle', name: 'Mantle' },
+    'AAVEUSD': { cgId: 'aave', name: 'Aave' },
+    'TAOUSD': { cgId: 'bittensor', name: 'Bittensor' },
+    // add more as needed
   };
   const asset = assetMap[symbol] || assetMap['BTCUSD'];  // fallback
    
