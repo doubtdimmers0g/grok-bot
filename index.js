@@ -151,7 +151,7 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
     'MORPHOUSD': { cgId: 'morpho', name: 'Morpho' },
     'AVAXUSD': { cgId: 'avalanche-2', name: 'Avalanche' },
     'HYPEUSD': { cgId: 'hyperliquid', name: 'Hyperliquid' },
-    'MNTUSD': { cgId: 'mantle', name: 'Mantle' },
+    'MANTLEUSD': { cgId: 'mantle', name: 'Mantle' },
     'AAVEUSD': { cgId: 'aave', name: 'Aave' },
     'TAOUSD': { cgId: 'bittensor', name: 'Bittensor' },
     // add more as needed
