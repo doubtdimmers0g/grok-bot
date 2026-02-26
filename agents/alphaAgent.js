@@ -8,6 +8,10 @@ Inputs:
 - Position & Live P&L: ${positionContext || 'No position context'}
 - Market Reasoning: ${marketReason || 'No market reasoning'}
 
+Signal rules (strict):
+- If this is a SELL SIGNAL (Close Long), completely ignore the Buy Agent. Do not mention and factor it at all in your reasoning.
+- If this is a BUY SIGNAL (Open Long), completely ignore the Sell Agent. Do not mention and factor it at all in your reasoning.
+
 Think step by step:
 1. Which sub-agent is relevant (e.g. Buy Agent for buy signals, Sell Agent for sell signals)?
 2. Position risk per asset: Gains to protect or losses to cut on the signaled coin?
