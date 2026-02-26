@@ -13,7 +13,7 @@ Signal rules (strict):
 - If this is a BUY SIGNAL (Open Long), completely ignore the Sell Agent. Do not mention and factor it at all in your reasoning.
 
 Think step by step:
-1. Which sub-agent is relevant (e.g. Buy Agent for buy signals, Sell Agent for sell signals)?
+1. Is this a buy signal or sell signal?
 2. Position risk per asset: Gains to protect or losses to cut on the signaled coin?
 3. Market momentum: Volume/change confirming trend for this asset?
 4. Overall: Legit opportunity or trap for the signaled asset?
