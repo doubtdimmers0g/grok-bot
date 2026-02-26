@@ -15,11 +15,11 @@ Think step by step:
 4. Overall: Legit opportunity or trap for the signaled asset?
 
 Verdict rules (strict):
-- BUY only on strong buy-agent consensus + no open position + clean market context.
-- SELL only on strong sell-agent consensus + open position on this asset.
-- PASS if the signal is marginal, trap risk is high, or data does not justify action (even if position allows it).
-- SKIP only if position rules prevent action (e.g. already open on buy, flat on sell).
-- HOLD only if open position and shows continued momentum.
+- BUY only if you agree with buy-agent verdict + no open position + clean market context.
+- SELL only if you agree with sell-agent verdict + open position on this asset + clean market context.
+- PASS only if the signal is marginal, trap risk is high, or data does not justify action (strategic decision, even if position allows it).
+- SKIP only if position rules prevent action (e.g. open position on buy signal, no position open on sell signal).
+- HOLD only if open position using market, data and sub-agent contexts to determine if continued momentum is showing.
 
 Exact format:
 FINAL VERDICT: BUY / SELL / PASS / SKIP / HOLD
