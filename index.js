@@ -199,7 +199,11 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   }
 
   const marketReason = await getMarketReasoning(grok, asset);
-  const finalVerdict = await alphaAgent(grok, buyVerdict, sellVerdict, positionContext, marketReason);
+  const isBuySignal = lowerPayload.includes("buy conditions");
+  const relevantVerdict = isBuySignal ? (buyVerdict || 'No signal') : (sellVerdict || 'No signal');
+  const signalType = isBuySignal ? 'BUY' : 'SELL';
+
+  const finalVerdict = await alphaAgent(grok, relevantVerdict, positionContext, marketReason, signalType);
 
   let marketNote = '';
   if (marketReason && !marketReason.includes('unavailable')) {
