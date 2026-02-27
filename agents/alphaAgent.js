@@ -2,13 +2,14 @@ async function alphaAgent(grok, buyVerdict, sellVerdict, positionContext, market
 
   const prompt = `Prime analyst final synthesis for spot crypto market trades. Prioritize capital protection in multi-position mode (one open per asset, concurrent across assets).
 
-Input:
-- Relevant Agent (${signalType} signal): ${relevantVerdict}
-- Position status: ${positionContext || 'No position context'}
+Inputs:
+- Buy Agent: ${buyVerdict || 'No buy signal'}
+- Sell Agent: ${sellVerdict || 'No sell signal'}
+- Position & Live P&L: ${positionContext || 'No position context'}
 - Market Reasoning: ${marketReason || 'No market reasoning'}
 
 Think step by step:
-1. What does the relevant agent say?
+1. What does the agent say?
 2. Position risk per asset: Gains to protect or losses to cut on the signaled coin?
 3. Market momentum: Volume/change confirming trend for this asset?
 4. Overall: Legit opportunity or trap for the signaled asset?
