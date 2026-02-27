@@ -219,11 +219,11 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
     
   // Log every signal for validation tracking
-  const signalType = lowerPayload.includes("buy conditions") ? 'BUY_SIGNAL' : 'SELL_SIGNAL';
+  const logSignalType = lowerPayload.includes("buy conditions") ? 'BUY_SIGNAL' : 'SELL_SIGNAL';
   try {
     await axios.post(`${SUPABASE_URL}/rest/v1/signals`, {
       symbol,
-      signal_type: signalType,
+      signal_type: logSignalType,
       final_verdict: cleanVerdict,
       ratio: ratio ? parseFloat(ratio) : null,
       price: d.Price
