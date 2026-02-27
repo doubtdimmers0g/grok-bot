@@ -201,9 +201,9 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   const marketReason = await getMarketReasoning(grok, asset);
   const isBuySignal = lowerPayload.includes("buy conditions");
   const relevantVerdict = isBuySignal ? (buyVerdict || 'No signal') : (sellVerdict || 'No signal');
-  const signalType = isBuySignal ? 'BUY' : 'SELL';
+  const logsignalType = isBuySignal ? 'BUY' : 'SELL';
 
-  const finalVerdict = await alphaAgent(grok, relevantVerdict, positionContext, marketReason, signalType);
+  const finalVerdict = await alphaAgent(grok, relevantVerdict, positionContext, marketReason, logsignalType);
 
   let marketNote = '';
   if (marketReason && !marketReason.includes('unavailable')) {
@@ -219,11 +219,11 @@ if (!symbol.endsWith('USD')) symbol += 'USD';  // Force suffix if missing
   const cleanVerdict = verdictMatch ? verdictMatch[1].toUpperCase() : 'SKIP';
     
   // Log every signal for validation tracking
-  const logSignalType = lowerPayload.includes("buy conditions") ? 'BUY_SIGNAL' : 'SELL_SIGNAL';
+  const SignalType = lowerPayload.includes("buy conditions") ? 'BUY_SIGNAL' : 'SELL_SIGNAL';
   try {
     await axios.post(`${SUPABASE_URL}/rest/v1/signals`, {
       symbol,
-      signal_type: logSignalType,
+      signal_type: SignalType,
       final_verdict: cleanVerdict,
       ratio: ratio ? parseFloat(ratio) : null,
       price: d.Price
