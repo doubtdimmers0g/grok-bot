@@ -8,9 +8,11 @@ Inputs:
 - Position & Live P&L: ${positionContext || 'No position context'}
 - Market Reasoning: ${marketReason || 'No market reasoning'}
 
-Signal rules (strict):
+EXTREMELY IMPORTANT RULES — OBEY THESE EXACTLY, NO EXCEPTIONS:
 - If this is a SELL SIGNAL (Close Long), completely ignore the Buy Agent. Do not mention and factor it at all in your reasoning.
 - If this is a BUY SIGNAL (Open Long), completely ignore the Sell Agent. Do not mention and factor it at all in your reasoning.
+
+Only discuss the relevant sub-agent for the signal type. Never mention the irrelevant one under any circumstances.
 
 Think step by step:
 1. Is this a buy signal or sell signal?
