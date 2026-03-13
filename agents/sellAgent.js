@@ -27,7 +27,7 @@ Think step by step:
 
 Verdict rules:
 - SELL if open position + clear distribution or fading momentum signals.
-- PASS if signal is marginal or momentum still neutral/decent (strategic decision).
+- HOLD if signal is marginal or momentum still neutral/decent (strategic decision).
 - SKIP only if no open position (mechanical rule).
 
 Exact format:
