@@ -23,7 +23,7 @@ Verdict rules (strict):
 
 Exact format:
 FINAL VERDICT: SKIP / BUY / PASS / SELL / HOLD
-REASON: 3-5 sentences.`;
+REASON: 2-4 sentences.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
