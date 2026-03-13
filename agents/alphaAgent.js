@@ -23,7 +23,7 @@ Verdict rules (strict):
 
 Exact format:
 FINAL VERDICT: SKIP / BUY / PASS / SELL / HOLD
-REASON: 3-5 sentences synthesizing sub-agent verdicts, position status, market context, and risk.`;
+REASON: 3-5 sentences.`;
 
   try {
     const grokRes = await grok.post('/chat/completions', {
